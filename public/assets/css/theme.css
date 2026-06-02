@@ -301,48 +301,60 @@ abbr[title] {
   position: relative;
 }
 
-/* Primary nav links list */
-.nav-menu {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-menu > li {
+/* Nav item containers — flex so link + toggle button sit inline */
+.nav-item {
   position: relative;
+  display: flex;
+  align-items: stretch;
 }
 
-.nav-menu > li > a,
-.nav-menu > li > button.nav-link {
+/* All top-level nav links: bare <a> (Home, Blog) and .nav-parent-link inside .nav-item */
+.site-nav-inner > a,
+.nav-item > a.nav-parent-link {
   display: block;
   color: var(--color-nav-text);
   text-decoration: none;
-  padding: 14px 18px;
+  padding: 14px 10px 14px 18px;
   font-size: 0.95rem;
   font-weight: 500;
-  background: none;
-  border: none;
-  cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease;
   white-space: nowrap;
 }
 
-.nav-menu > li > a:hover,
-.nav-menu > li > button.nav-link:hover {
+.site-nav-inner > a {
+  padding: 14px 18px;
+}
+
+.site-nav-inner > a:hover,
+.nav-item > a.nav-parent-link:hover {
   color: var(--color-accent-light);
   background-color: rgba(255, 255, 255, 0.08);
   text-decoration: none;
 }
 
 /* Active nav link — gold underline indicator */
-.nav-menu > li > a.nav-active,
-.nav-menu > li.current-menu-item > a {
+.site-nav-inner > a.current,
+.nav-item.current > a.nav-parent-link {
   color: var(--color-accent-light);
   box-shadow: inset 0 -3px 0 var(--color-accent);
+}
+
+/* Dropdown toggle button (▼) */
+.nav-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  padding: 0 12px 0 2px;
+  font-size: 0.65rem;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.nav-dropdown-btn:hover {
+  color: var(--color-accent-light);
 }
 
 /* Dropdown menus */
@@ -357,10 +369,9 @@ abbr[title] {
   box-shadow: var(--shadow-hover);
   z-index: 500;
   padding: 0.5rem 0;
-  list-style: none;
 }
 
-.nav-dropdown li a {
+.nav-dropdown a {
   display: block;
   padding: 10px 20px;
   color: var(--color-text);
@@ -369,14 +380,20 @@ abbr[title] {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.nav-dropdown li a:hover {
+.nav-dropdown a:hover {
   background: var(--color-bg-alt);
   color: var(--color-primary);
   text-decoration: none;
 }
 
-.nav-menu > li:hover > .nav-dropdown,
-.nav-menu > li:focus-within > .nav-dropdown {
+.nav-dropdown a.current {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Open dropdown on hover/focus (desktop) */
+.nav-item:hover > .nav-dropdown,
+.nav-item:focus-within > .nav-dropdown {
   display: block;
 }
 
@@ -1275,6 +1292,21 @@ main#main-content {
   max-width: none;
 }
 
+/* Direct <a> links inside footer columns (Pages list, address links) */
+.footer-col a {
+  display: block;
+  color: rgba(237, 232, 245, 0.75);
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 2px 0;
+  transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
 .footer-links {
   list-style: none;
   display: flex;
@@ -1835,25 +1867,24 @@ select.form-control {
     flex-direction: column;
     align-items: stretch;
     padding: 0;
-  }
-
-  .nav-menu {
-    display: none;
-    flex-direction: column;
-    width: 100%;
     background: var(--color-primary-dark);
-    padding-bottom: 0.5rem;
   }
 
-  .nav-menu.nav-open {
+  /* Hide all nav items by default; show when .open is toggled */
+  .site-nav-inner > a,
+  .site-nav-inner > .nav-item {
+    display: none;
+  }
+
+  .site-nav-inner.open > a,
+  .site-nav-inner.open > .nav-item {
     display: flex;
   }
 
-  .nav-menu > li > a,
-  .nav-menu > li > button.nav-link {
+  .site-nav-inner > a,
+  .nav-item > a.nav-parent-link {
     padding: 13px 20px;
     width: 100%;
-    text-align: left;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
@@ -1867,24 +1898,19 @@ select.form-control {
     padding: 0;
   }
 
-  .nav-menu > li.nav-open > .nav-dropdown {
+  .nav-item.open > .nav-dropdown {
     display: block;
   }
 
-  .nav-dropdown li a {
+  .nav-dropdown a {
     color: rgba(255, 255, 255, 0.8);
     padding: 10px 30px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  .nav-dropdown li a:hover {
+  .nav-dropdown a:hover {
     background: rgba(255, 255, 255, 0.08);
     color: #fff;
-  }
-
-  /* Mobile nav toggle row */
-  .site-nav-inner > .nav-toggle {
-    margin: 12px 16px 12px auto;
   }
 
   /* Home hero */
