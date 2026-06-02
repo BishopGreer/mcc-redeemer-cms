@@ -79,13 +79,26 @@ function renderPage(string $title, callable $body, array $opts = []): void {
         header("Content-Security-Policy: {$csp}");
     }
 
-    // Navigation pages — fetch all for this site, then build multi-level tree
-    $allNavPages = Database::fetchAll(
-        "SELECT id, title, slug, nav_label, parent_id, page_type, link_url FROM pages
-         WHERE show_in_nav = 1 AND status = 'published' AND site_id = ?
-         ORDER BY menu_order ASC",
-        [Database::siteId()]
-    );
+    // Navigation pages — fetch all for this site, then build multi-level tree.
+    // Falls back to a simpler query if the page_type column doesn't exist yet
+    // (pending migration 0024_nav_custom_links — go to /admin/updates to apply).
+    try {
+        $allNavPages = Database::fetchAll(
+            "SELECT id, title, slug, nav_label, parent_id, page_type, link_url FROM pages
+             WHERE show_in_nav = 1 AND status = 'published' AND site_id = ?
+             ORDER BY menu_order ASC",
+            [Database::siteId()]
+        );
+    } catch (\Throwable) {
+        $allNavPages = Database::fetchAll(
+            "SELECT id, title, slug, nav_label, parent_id,
+                    'page' AS page_type, NULL AS link_url
+             FROM pages
+             WHERE show_in_nav = 1 AND status = 'published' AND site_id = ?
+             ORDER BY menu_order ASC",
+            [Database::siteId()]
+        );
+    }
     $navById = array_column($allNavPages, null, 'id');
 
     // Build parent_id → [children] map; orphaned parents fall to root (0)

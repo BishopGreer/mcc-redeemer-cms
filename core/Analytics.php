@@ -7,11 +7,12 @@ class Analytics {
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
         if (self::isBot($ua)) return;
 
-        // Skip admin visits when setting is on
+        // Skip admin visits when setting is on — Auth::init() has already started the session
         if (Database::setting('analytics_exclude_admins', '1') === '1') {
-            session_start();
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
             $isAdmin = !empty($_SESSION['user_id']);
-            if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
             if ($isAdmin) return;
         }
 
