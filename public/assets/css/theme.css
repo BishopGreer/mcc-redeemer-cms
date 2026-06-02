@@ -4506,6 +4506,110 @@ select.form-control {
 }
 
 /* ============================================================
+   FORMS LISTING PAGE
+   ============================================================ */
+
+.forms-page {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.forms-page__header {
+  margin-bottom: 2.5rem;
+}
+
+.forms-page__title {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: clamp(1.75rem, 3.5vw, 2.4rem);
+  margin-bottom: 0.5rem;
+}
+
+.forms-page__intro {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.65;
+  max-width: 65ch;
+}
+
+.forms-page__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Individual form card */
+.forms-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(107, 63, 160, 0.15);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.forms-card:hover {
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(107, 63, 160, 0.35);
+  transform: translateY(-2px);
+}
+
+.forms-card__icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(107, 63, 160, 0.08);
+  border-radius: 50%;
+}
+
+.forms-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.forms-card__title {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  margin: 0 0 0.4rem;
+}
+
+.forms-card__desc {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0 0 0.6rem;
+}
+
+.forms-card__link {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+}
+
+.forms-card:hover .forms-card__link {
+  color: var(--color-primary-dark);
+}
+
+@media (max-width: 600px) {
+  .forms-card {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================================
    24. FOCUS & ACCESSIBILITY
    ============================================================ */
 
