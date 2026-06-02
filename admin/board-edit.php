@@ -3,6 +3,7 @@ require_once dirname(__DIR__) . '/config/config.php';
 require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Auth.php';
 require_once BASE_PATH . '/core/Media.php';
+require_once BASE_PATH . '/core/PageCache.php';
 require_once BASE_PATH . '/core/helpers.php';
 require_once __DIR__ . '/layout.php';
 
@@ -51,10 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errors) {
         if ($isNew) {
             $newId = Database::insert('board_members', $data);
+            PageCache::clearAll();
             flash('success', 'Board member added.');
             redirect(siteUrl('admin/board/' . $newId . '/edit'));
         } else {
             Database::update('board_members', $data, ['id' => $id]);
+            PageCache::clearAll();
             flash('success', 'Board member updated.');
             redirect(siteUrl('admin/board/' . $id . '/edit'));
         }

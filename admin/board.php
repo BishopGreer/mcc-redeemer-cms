@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/config/config.php';
 require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Auth.php';
+require_once BASE_PATH . '/core/PageCache.php';
 require_once BASE_PATH . '/core/helpers.php';
 require_once __DIR__ . '/layout.php';
 
@@ -15,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     $id = (int)($_POST['id'] ?? 0);
     if ($id) {
         Database::query("DELETE FROM board_members WHERE id = ? AND site_id = ?", [$id, Database::siteId()]);
+        PageCache::clearAll();
         flash('success', 'Board member removed.');
     }
     redirect(siteUrl('admin/board'));
