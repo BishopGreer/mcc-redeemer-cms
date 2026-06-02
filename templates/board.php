@@ -25,7 +25,7 @@ renderPage('Board of Directors', function() use ($members) {
     <div class="board-card">
       <?php if ($m['photo_path']): ?>
       <div class="board-photo-wrap">
-        <img src="<?= siteUrl($m['photo_path']) ?>"
+        <img src="<?= h(UPLOAD_URL . '/' . $m['photo_path']) ?>"
              alt="<?= h($m['photo_alt'] ?: $m['name']) ?>"
              class="board-photo"
              <?= $m['photo_w'] ? 'width="' . $m['photo_w'] . '" height="' . $m['photo_h'] . '"' : '' ?>
