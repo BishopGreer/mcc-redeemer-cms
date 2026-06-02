@@ -82,7 +82,7 @@ adminLayout('Board of Directors', function() use ($members) {
         <td style="color:#9ca3af; font-size:1.2rem; text-align:center;">&#8597;</td>
         <td>
           <?php if ($m['photo_path']): ?>
-          <img src="<?= siteUrl($m['photo_path']) ?>" alt="<?= h($m['photo_alt'] ?: $m['name']) ?>"
+          <img src="<?= h(UPLOAD_URL . '/' . $m['photo_path']) ?>" alt="<?= h($m['photo_alt'] ?: $m['name']) ?>"
                style="width:36px; height:36px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:8px;">
           <?php endif; ?>
           <strong><?= h($m['name']) ?></strong>
