@@ -1,4 +1,4 @@
--- Parish CMS - Database Schema
+-- MCC Our Redeemer CMS - Database Schema
 -- MariaDB / MySQL compatible
 -- Run this once on a fresh database
 
@@ -9,6 +9,7 @@ SET time_zone = '+00:00';
 -- on a partially-initialized database always starts from a clean slate.
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `migrations`;
+DROP TABLE IF EXISTS `board_members`;
 DROP TABLE IF EXISTS `form_files`;
 DROP TABLE IF EXISTS `form_submissions`;
 DROP TABLE IF EXISTS `custom_forms`;
@@ -180,9 +181,35 @@ CREATE TABLE IF NOT EXISTS `analytics_views` (
   `user_agent`   VARCHAR(500) DEFAULT NULL,
   `country`      VARCHAR(80) DEFAULT NULL,
   `device`       ENUM('desktop','tablet','mobile','bot') NOT NULL DEFAULT 'desktop',
+  `browser`      VARCHAR(40) DEFAULT NULL,
+  `os`           VARCHAR(40) DEFAULT NULL,
+  `session_id`   VARCHAR(64) DEFAULT NULL,
+  `is_entry`     TINYINT(1) NOT NULL DEFAULT 0,
+  `duration_sec` SMALLINT UNSIGNED DEFAULT NULL,
   `viewed_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_url` (`url`(191)),
-  INDEX `idx_viewed_at` (`viewed_at`)
+  INDEX `idx_url`      (`url`(191)),
+  INDEX `idx_viewed_at` (`viewed_at`),
+  INDEX `idx_session`  (`session_id`),
+  INDEX `idx_site_date` (`site_id`, `viewed_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------
+-- Board of Directors
+-- -------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `board_members` (
+  `id`            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `site_id`       INT UNSIGNED NOT NULL DEFAULT 1,
+  `name`          VARCHAR(150) NOT NULL,
+  `title`         VARCHAR(150) DEFAULT NULL,
+  `bio`           LONGTEXT DEFAULT NULL,
+  `photo_id`      INT UNSIGNED DEFAULT NULL,
+  `email`         VARCHAR(255) DEFAULT NULL,
+  `display_order` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `is_active`     TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY `idx_site_id` (`site_id`),
+  KEY `idx_order`   (`site_id`, `display_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- -------------------------------------------------------
@@ -312,22 +339,40 @@ CREATE TABLE IF NOT EXISTS `nav_items` (
 
 -- Default settings (site 1 = primary site)
 INSERT IGNORE INTO `settings` (`site_id`, `key`, `value`) VALUES
-  (1, 'site_name',          'Your Parish'),
-  (1, 'site_tagline',       'A Community of Faith'),
-  (1, 'site_url',           'https://your-site.org'),
-  (1, 'admin_email',        'admin@your-site.org'),
-  (1, 'smtp_host',          ''),
-  (1, 'smtp_port',          '587'),
-  (1, 'smtp_user',          ''),
-  (1, 'smtp_pass',          ''),
-  (1, 'smtp_encryption',    'tls'),
-  (1, 'posts_per_page',     '10'),
-  (1, 'date_format',        'F j, Y'),
-  (1, 'timezone',           'America/Chicago'),
-  (1, 'analytics_enabled',  '1'),
-  (1, 'analytics_exclude_admins', '1'),
-  (1, 'home_page_id',       ''),
-  (1, 'blog_page_id',       '');
+  (1, 'site_name',                  'MCC Our Redeemer'),
+  (1, 'site_tagline',               'Open Hearts, Open Doors, Open Minds'),
+  (1, 'site_url',                   'https://your-site.org'),
+  (1, 'admin_email',                'admin@your-site.org'),
+  (1, 'smtp_host',                  ''),
+  (1, 'smtp_port',                  '587'),
+  (1, 'smtp_user',                  ''),
+  (1, 'smtp_pass',                  ''),
+  (1, 'smtp_encryption',            'tls'),
+  (1, 'posts_per_page',             '10'),
+  (1, 'date_format',                'F j, Y'),
+  (1, 'timezone',                   'America/New_York'),
+  (1, 'analytics_enabled',          '1'),
+  (1, 'analytics_exclude_admins',   '1'),
+  (1, 'analytics_track_browser',    '1'),
+  (1, 'analytics_track_os',         '1'),
+  (1, 'analytics_session_minutes',  '30'),
+  (1, 'home_page_id',               ''),
+  (1, 'blog_page_id',               ''),
+  (1, 'blog_enabled',               '0'),
+  (1, 'blog_nav_label',             'Blog'),
+  (1, 'contact_page_enabled',       '1'),
+  (1, 'constant_contact_api_key',   ''),
+  (1, 'constant_contact_list_id',   ''),
+  (1, 'paypal_link',                ''),
+  (1, 'venmo_link',                 ''),
+  (1, 'donate_page_title',          'Support Our Church'),
+  (1, 'donate_description',         'Your generosity helps us continue our ministry and serve our community.'),
+  (1, 'newsletter_signup_enabled',  '1'),
+  (1, 'newsletter_signup_label',    'Stay Connected — Join Our Newsletter'),
+  (1, 'parish_address',             ''),
+  (1, 'parish_phone',               ''),
+  (1, 'parish_city',                'Augusta'),
+  (1, 'parish_state',               'GA');
 
 -- Default admin user (site_id=NULL = network-wide; password: ChangeMe123! — CHANGE IMMEDIATELY)
 INSERT IGNORE INTO `users` (`site_id`, `name`, `email`, `password`, `role`) VALUES
@@ -338,20 +383,23 @@ INSERT IGNORE INTO `users` (`site_id`, `name`, `email`, `password`, `role`) VALU
 -- Default home page
 INSERT IGNORE INTO `pages` (`site_id`, `title`, `slug`, `content`, `status`, `show_in_nav`, `nav_label`, `menu_order`, `author_id`) VALUES
   (1, 'Home', 'home',
-   '<h2>Welcome to Your Parish</h2><p>We are a community of faith rooted in the Gospel of Jesus Christ. All are welcome here.</p>',
+   '<h2>Welcome to MCC Our Redeemer</h2><p>We are a Metropolitan Community Church where everyone is welcome. All are beloved children of God.</p>',
    'published', 0, 'Home', 0, 1),
   (1, 'About Us', 'about',
-   '<h2>About Your Parish</h2><p>Our parish community gathers in faith, embracing simplicity, joy, and care for all of creation.</p>',
+   '<h2>About MCC Our Redeemer</h2><p>Metropolitan Community Church of Our Redeemer is an affirming, inclusive Christian community in Augusta, Georgia.</p>',
    'published', 1, 'About', 1, 1),
-  (1, 'Mass & Sacraments', 'mass-and-sacraments',
-   '<h2>Mass &amp; Sacraments</h2><p>Mass schedule and sacramental information will appear here.</p>',
-   'published', 1, 'Mass & Sacraments', 2, 1),
+  (1, 'Worship', 'worship',
+   '<h2>Worship With Us</h2><p>Our worship schedule and service information will appear here.</p>',
+   'published', 1, 'Worship', 2, 1),
   (1, 'Ministries', 'ministries',
-   '<h2>Parish Ministries</h2><p>Information about our parish ministries will appear here.</p>',
+   '<h2>Ministries</h2><p>Information about our church ministries will appear here.</p>',
    'published', 1, 'Ministries', 3, 1),
-  (1, 'Contact', 'contact',
-   '<h2>Contact Us</h2><p>Parish office contact information will appear here.</p>',
-   'published', 1, 'Contact', 4, 1);
+  (1, 'Leadership', 'leadership',
+   '<h2>Our Leadership</h2><p>Meet our pastoral team and board of directors.</p>',
+   'published', 1, 'Leadership', 4, 1),
+  (1, 'Give', 'give',
+   '<h2>Support Our Church</h2><p>Your generosity helps us continue our ministry and serve our community.</p>',
+   'published', 1, 'Give', 5, 1);
 
 -- Update home_page_id for site 1
 UPDATE `settings` SET `value` = (SELECT `id` FROM `pages` WHERE `slug` = 'home' AND site_id = 1 LIMIT 1)
@@ -359,4 +407,4 @@ WHERE site_id = 1 AND `key` = 'home_page_id';
 
 -- Default blog category
 INSERT IGNORE INTO `categories` (`name`, `slug`, `description`) VALUES
-  ('Parish News', 'parish-news', 'News and announcements from the parish');
+  ('Church News', 'church-news', 'News and announcements from MCC Our Redeemer');

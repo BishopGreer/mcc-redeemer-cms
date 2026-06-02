@@ -31,11 +31,11 @@ function adminLayout(string $pageTitle, callable $body): void {
         ['Blog Posts',       'admin/posts',           '&#9998;',  'manage_content'],
         ['Categories',       'admin/categories',      '&#9741;',  'manage_content'],
         ['Tags',             'admin/tags',            '&#9872;',  'manage_content'],
+        ['Board of Directors','admin/board',          '&#128101;','manage_content'],
         ['Media',            'admin/media',           '&#128247;','manage_media'],
         ['Analytics',        'admin/analytics',       '&#128200;','view_analytics'],
         ['Contact',          'admin/contacts',        '&#9993;',  'manage_contacts'],
-        ['Prayer Requests',  'admin/prayers',         '&#9827;',  'manage_prayers'],
-        ['Contact & Prayer Pages', 'admin/contact-prayer', '&#9998;', 'manage_contacts'],
+        ['Contact Page',     'admin/contact-prayer',  '&#9998;',  'manage_contacts'],
         ['Forms',            'admin/forms',           '&#128196;','manage_contacts'],
         ['Settings',         'admin/settings',        '&#9881;',  'manage_settings'],
         ['Domain / URL',     'admin/domain',          '&#127760;','manage_settings'],
@@ -112,53 +112,6 @@ function adminLayout(string $pageTitle, callable $body): void {
         </a>
       <?php endforeach; ?>
 
-      <?php if (Auth::hasPermission('manage_content') && Database::siteId() === 1): ?>
-      <a href="<?= siteUrl('admin/parish-locator') ?>" class="<?= str_starts_with($req, 'admin/parish-locator') ? 'active' : '' ?>">
-        <span class="icon">&#9783;</span> Parish Locator
-      </a>
-      <a href="<?= siteUrl('admin/clergy') ?>" class="<?= str_starts_with($req, 'admin/clergy') ? 'active' : '' ?>">
-        <span class="icon">&#9827;</span> Clergy Directory
-      </a>
-      <a href="<?= siteUrl('admin/daily-readings') ?>" class="<?= str_starts_with($req, 'admin/daily-readings') ? 'active' : '' ?>">
-        <span class="icon">&#9998;</span> Daily Readings
-      </a>
-      <?php endif; ?>
-
-      <?php if (Auth::hasPermission('view_records') && Database::siteId() === 1): ?>
-      <div class="sidebar-section">Records</div>
-      <a href="<?= siteUrl('admin/records/') ?>" class="<?= ($req === 'admin/records' || $req === 'admin/records/') ? 'active' : '' ?>">
-        <span class="icon">&#9827;</span> All Registers
-      </a>
-      <a href="<?= siteUrl('admin/records/baptisms') ?>" class="<?= str_starts_with($req, 'admin/records/baptisms') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> Baptisms
-      </a>
-      <a href="<?= siteUrl('admin/records/confirmations') ?>" class="<?= str_starts_with($req, 'admin/records/confirmations') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> Confirmations
-      </a>
-      <a href="<?= siteUrl('admin/records/communions') ?>" class="<?= str_starts_with($req, 'admin/records/communions') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> First Communion
-      </a>
-      <a href="<?= siteUrl('admin/records/marriages') ?>" class="<?= str_starts_with($req, 'admin/records/marriages') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> Marriages
-      </a>
-      <a href="<?= siteUrl('admin/records/deaths') ?>" class="<?= str_starts_with($req, 'admin/records/deaths') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> Deaths
-      </a>
-      <a href="<?= siteUrl('admin/records/ordinations') ?>" class="<?= str_starts_with($req, 'admin/records/ordinations') ? 'active' : '' ?>">
-        <span class="icon">&#43;</span> Ordinations
-      </a>
-      <a href="<?= siteUrl('admin/records/report') ?>" class="<?= str_starts_with($req, 'admin/records/report') ? 'active' : '' ?>">
-        <span class="icon">&#128269;</span> Person Report
-      </a>
-      <a href="<?= siteUrl('admin/records/parishes') ?>" class="<?= str_starts_with($req, 'admin/records/parishes') ? 'active' : '' ?>">
-        <span class="icon">&#9783;</span> Parishes
-      </a>
-      <?php if (Auth::hasPermission('manage_records_settings')): ?>
-      <a href="<?= siteUrl('admin/records/settings') ?>" class="<?= str_starts_with($req, 'admin/records/settings') ? 'active' : '' ?>">
-        <span class="icon">&#9881;</span> NSR Settings
-      </a>
-      <?php endif; ?>
-      <?php endif; ?>
 
       <?php if ($isNetworkMode && $isSuperAdmin): ?>
       <div class="sidebar-section">Network</div>

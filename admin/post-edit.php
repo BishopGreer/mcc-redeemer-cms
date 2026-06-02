@@ -3,7 +3,6 @@ require_once dirname(__DIR__) . '/config/config.php';
 require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Auth.php';
 require_once BASE_PATH . '/core/helpers.php';
-require_once BASE_PATH . '/core/Social.php';
 require_once BASE_PATH . '/core/PageCache.php';
 require_once __DIR__ . '/layout.php';
 PageCache::init();
@@ -78,58 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $savedId = $id;
         }
 
-        // Auto-share on first publish
         $autoShared = [];
         $autoFailed = [];
-        if ($justPublished) {
-            $savedSlug = $data['slug'];
-            $postUrl   = siteUrl('blog/' . $savedSlug);
-            $sharePost = array_merge($isNew ? [] : $post, $data, ['id' => $savedId]);
-
-            // Each platform gets a message pre-truncated to its own character limit
-            $platformLimits = ['facebook' => 63206, 'bluesky' => 300, 'threads' => 500, 'mastodon' => 500];
-            $msg = fn(string $platform) => Social::defaultMessage($sharePost, $postUrl, $platformLimits[$platform]);
-
-            $autoPlatforms = [
-                'facebook' => [
-                    'setting' => 'social_auto_facebook',
-                    'fn'      => fn() => Social::shareToFacebook($msg('facebook'), $postUrl, setting('social_fb_page_id',''), setting('social_fb_access_token','')),
-                ],
-                'bluesky' => [
-                    'setting' => 'social_auto_bluesky',
-                    'fn'      => fn() => Social::shareToBlueSky($msg('bluesky'), setting('social_bsky_handle',''), setting('social_bsky_app_password','')),
-                ],
-                'threads' => [
-                    'setting' => 'social_auto_threads',
-                    'fn'      => fn() => Social::shareToThreads($msg('threads'), setting('social_threads_user_id',''), setting('social_threads_access_token','')),
-                ],
-                'mastodon' => [
-                    'setting' => 'social_auto_mastodon',
-                    'fn'      => fn() => Social::shareToMastodon($msg('mastodon'), setting('social_mastodon_instance',''), setting('social_mastodon_token','')),
-                ],
-            ];
-
-            $platformLabels = ['facebook' => 'Facebook', 'bluesky' => 'BlueSky', 'threads' => 'Threads', 'mastodon' => 'Mastodon'];
-
-            foreach ($autoPlatforms as $platform => $cfg) {
-                if (setting($cfg['setting'], '0') !== '1') continue;
-                $res = ($cfg['fn'])();
-                Database::insert('social_shares', [
-                    'post_id'          => $savedId,
-                    'platform'         => $platform,
-                    'status'           => $res['success'] ? 'success' : 'failed',
-                    'platform_post_id' => $res['post_id'] ?? null,
-                    'message'          => mb_substr($text, 0, 1000, 'UTF-8'),
-                    'error_message'    => $res['error'] ?? null,
-                    'shared_by'        => null, // auto, not user-initiated
-                ]);
-                if ($res['success']) {
-                    $autoShared[] = $platformLabels[$platform];
-                } else {
-                    $autoFailed[] = $platformLabels[$platform] . ': ' . ($res['error'] ?? 'unknown error');
-                }
-            }
-        }
 
         // Build flash message
         $verb = $isNew ? 'created' : 'updated';
@@ -197,27 +146,7 @@ $allSiteTags = $tagsTableExists
     ? Database::fetchAll("SELECT name FROM tags WHERE site_id = ? ORDER BY name ASC", [Database::siteId()])
     : [];
 
-// Social sharing data (only relevant for existing published posts)
-$socialShares   = [];
-$configuredNets = [];
-$defaultShareMsg = '';
-if (!$isNew && $post['status'] === 'published') {
-    $socialShares = Database::fetchAll(
-        "SELECT * FROM social_shares WHERE post_id = ? ORDER BY shared_at DESC", [$id]
-    );
-    // Which platforms have credentials configured?
-    if (setting('social_fb_page_id') && setting('social_fb_access_token'))          $configuredNets[] = 'facebook';
-    if (setting('social_bsky_handle') && setting('social_bsky_app_password'))        $configuredNets[] = 'bluesky';
-    if (setting('social_threads_user_id') && setting('social_threads_access_token')) $configuredNets[] = 'threads';
-    if (setting('social_mastodon_instance') && setting('social_mastodon_token'))     $configuredNets[] = 'mastodon';
-
-    // Pre-truncate the default message to the tightest limit of all configured platforms
-    $platformLimits = ['facebook' => 63206, 'bluesky' => 300, 'threads' => 500, 'mastodon' => 500];
-    $tightest = empty($configuredNets) ? 0 : min(array_map(fn($n) => $platformLimits[$n], $configuredNets));
-    $defaultShareMsg = Social::defaultMessage($post, siteUrl('blog/' . $post['slug']), $tightest);
-}
-
-adminLayout($isNew ? 'New Post' : 'Edit: ' . $post['title'], function() use ($post, $id, $errors, $categories, $isNew, $socialShares, $configuredNets, $defaultShareMsg, $tagsTableExists, $postTagNames, $allSiteTags) {
+adminLayout($isNew ? 'New Post' : 'Edit: ' . $post['title'], function() use ($post, $id, $errors, $categories, $isNew, $tagsTableExists, $postTagNames, $allSiteTags) {
 ?>
 
 <?php if ($errors): ?>
@@ -369,99 +298,6 @@ adminLayout($isNew ? 'New Post' : 'Edit: ' . $post['title'], function() use ($po
         </button>
       </div>
 
-      <?php if (!$isNew && $post['status'] === 'published'): ?>
-      <div class="card" id="social-share-card">
-        <div class="card-header"><h2 class="card-title">&#128279; Share to Social</h2></div>
-
-        <?php if (empty($configuredNets)): ?>
-          <p style="font-size:13px; color:#888; margin-bottom:4px;">
-            No social media accounts configured.
-            <a href="<?= siteUrl('admin/settings') ?>#social">Set up in Settings &rarr;</a>
-          </p>
-        <?php else: ?>
-
-          <?php
-          $netMeta = [
-              'facebook' => ['label' => 'Facebook',  'color' => '#1877f2', 'limit' => 63206],
-              'bluesky'  => ['label' => 'BlueSky',   'color' => '#0085ff', 'limit' => 300],
-              'threads'  => ['label' => 'Threads',   'color' => '#000',    'limit' => 500],
-              'mastodon' => ['label' => 'Mastodon',  'color' => '#6364ff', 'limit' => 500],
-          ];
-          $mostRestrictive = 300; // BlueSky limit when selected
-
-          // Last share per platform
-          $lastShare = [];
-          foreach ($socialShares as $sh) {
-              if (!isset($lastShare[$sh['platform']])) {
-                  $lastShare[$sh['platform']] = $sh;
-              }
-          }
-          ?>
-
-          <div style="margin-bottom:10px;">
-            <?php foreach ($configuredNets as $net):
-              $nm = $netMeta[$net];
-              $ls = $lastShare[$net] ?? null;
-            ?>
-              <label style="display:flex; align-items:center; gap:8px; margin-bottom:6px; cursor:pointer; font-size:13px;">
-                <input type="checkbox" class="social-net-cb" value="<?= $net ?>" checked
-                       onchange="updateCharLimit()">
-                <span style="font-weight:600; color:<?= $nm['color'] ?>;"><?= $nm['label'] ?></span>
-                <?php if ($ls): ?>
-                  <span style="font-size:11px; color:#aaa; font-weight:normal;">
-                    <?= $ls['status'] === 'success' ? '&#10003;' : '&#10007;' ?>
-                    <?= date('M j \a\t g:i a', strtotime($ls['shared_at'])) ?>
-                    <?php if ($ls['status'] === 'failed' && $ls['error_message']): ?>
-                      — <span style="color:#c0392b;"><?= h(mb_substr($ls['error_message'], 0, 60)) ?></span>
-                    <?php endif; ?>
-                  </span>
-                <?php endif; ?>
-              </label>
-            <?php endforeach; ?>
-          </div>
-
-          <div class="form-group" style="margin-bottom:6px;">
-            <label style="font-size:12px;">Message</label>
-            <textarea id="social-message" class="form-control" rows="6"
-                      oninput="updateCharCount(); autoResizeSocialMsg(this)"
-                      placeholder="Leave blank to use the post title + excerpt + link automatically."
-                      style="font-size:13px; resize:vertical; overflow:hidden;"><?= h($defaultShareMsg) ?></textarea>
-            <div style="font-size:11px; color:#aaa; text-align:right; margin-top:3px;">
-              <span id="social-char-count">0</span> / <span id="social-char-limit"><?= $mostRestrictive ?></span>
-              characters <span style="opacity:.6;">(limit of selected platforms)</span>
-            </div>
-          </div>
-
-          <button type="button" id="social-share-btn" onclick="doSocialShare()"
-                  class="btn btn-primary" style="width:100%; margin-top:4px;">
-            Share Now
-          </button>
-
-          <div id="social-share-result" style="margin-top:10px; display:none;"></div>
-
-          <?php if (!empty($socialShares)): ?>
-          <div style="margin-top:14px; border-top:1px solid #f0e6d6; padding-top:12px;">
-            <div style="font-size:11px; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px;">Share History</div>
-            <?php foreach (array_slice($socialShares, 0, 10) as $sh):
-              $nm = $netMeta[$sh['platform']] ?? ['label' => ucfirst($sh['platform']), 'color' => '#555'];
-            ?>
-              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:12px;">
-                <span style="font-weight:600; color:<?= $nm['color'] ?>; min-width:65px;"><?= $nm['label'] ?></span>
-                <span style="color:<?= $sh['status'] === 'success' ? '#16a34a' : '#dc2626' ?>;">
-                  <?= $sh['status'] === 'success' ? '&#10003; Shared' : '&#10007; Failed' ?>
-                </span>
-                <span style="color:#aaa;"><?= date('M j, Y g:i a', strtotime($sh['shared_at'])) ?></span>
-                <?php if ($sh['status'] === 'failed' && $sh['error_message']): ?>
-                  <span style="color:#c0392b; font-size:11px;"><?= h(mb_substr($sh['error_message'], 0, 80)) ?></span>
-                <?php endif; ?>
-              </div>
-            <?php endforeach; ?>
-          </div>
-          <?php endif; ?>
-
-        <?php endif; ?>
-      </div>
-      <?php endif; ?>
 
     </div>
   </div>
@@ -584,101 +420,6 @@ function autoSlug(title) {
 })();
 
 // Media picker is provided by admin.js (loaded in layout)
-
-// Social sharing
-const socialLimits = {facebook: 63206, bluesky: 300, threads: 500, mastodon: 500};
-const socialCsrf   = '<?= Auth::csrf() ?>';
-const socialPostId = <?= $isNew ? 'null' : $id ?>;
-
-function updateCharLimit() {
-  let min = Infinity;
-  document.querySelectorAll('.social-net-cb:checked').forEach(cb => {
-    min = Math.min(min, socialLimits[cb.value] ?? Infinity);
-  });
-  const limitEl = document.getElementById('social-char-limit');
-  if (limitEl) limitEl.textContent = min === Infinity ? '—' : min;
-  updateCharCount();
-}
-
-function updateCharCount() {
-  const msg = document.getElementById('social-message');
-  const cnt = document.getElementById('social-char-count');
-  const lim = document.getElementById('social-char-limit');
-  if (!msg || !cnt) return;
-  const len = [...msg.value].length; // grapheme-safe
-  cnt.textContent = len;
-  const limit = parseInt(lim?.textContent) || 0;
-  cnt.style.color = (limit && len > limit) ? '#dc2626' : '#888';
-}
-
-function doSocialShare() {
-  const platforms = [...document.querySelectorAll('.social-net-cb:checked')].map(cb => cb.value);
-  if (!platforms.length) { alert('Select at least one platform.'); return; }
-
-  const msg = document.getElementById('social-message')?.value ?? '';
-  const btn = document.getElementById('social-share-btn');
-  const res = document.getElementById('social-share-result');
-
-  btn.disabled = true;
-  btn.textContent = 'Sharing…';
-  res.style.display = 'none';
-
-  const body = new FormData();
-  body.append('_csrf', socialCsrf);
-  body.append('post_id', socialPostId);
-  body.append('message', msg);
-  platforms.forEach(p => body.append('platforms[]', p));
-
-  fetch('<?= siteUrl('admin/ajax/social-share') ?>', {method: 'POST', body})
-    .then(r => r.json())
-    .then(data => {
-      if (data.error) {
-        res.innerHTML = `<div style="color:#dc2626;font-size:13px;">&#10007; ${data.error}</div>`;
-        res.style.display = 'block';
-        return;
-      }
-
-      const netLabels = {facebook:'Facebook', bluesky:'BlueSky', threads:'Threads', mastodon:'Mastodon'};
-      let html = '<div style="font-size:13px;">';
-      let anyFailure = false;
-      for (const [plat, r] of Object.entries(data.results ?? {})) {
-        const label = netLabels[plat] ?? plat;
-        if (r.success) {
-          html += `<div style="color:#16a34a; margin-bottom:3px;">&#10003; ${label} — shared successfully</div>`;
-        } else {
-          html += `<div style="color:#dc2626; margin-bottom:3px;">&#10007; ${label} — ${r.error ?? 'failed'}</div>`;
-          anyFailure = true;
-        }
-      }
-      html += '</div>';
-      res.innerHTML = html;
-      res.style.display = 'block';
-
-      // Only reload on full success — leave errors visible so they can be read
-      if (!anyFailure) setTimeout(() => location.reload(), 2200);
-    })
-    .catch(() => {
-      res.innerHTML = '<div style="color:#dc2626;font-size:13px;">&#10007; Network error. Check your credentials and try again.</div>';
-      res.style.display = 'block';
-    })
-    .finally(() => {
-      btn.disabled = false;
-      btn.textContent = 'Share Now';
-    });
-}
-
-function autoResizeSocialMsg(el) {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-}
-
-// Init char counter and textarea height on load
-document.addEventListener('DOMContentLoaded', () => {
-  updateCharLimit();
-  updateCharCount();
-  const msg = document.getElementById('social-message');
-  if (msg) autoResizeSocialMsg(msg);
-});
 </script>
 
 <?php }); ?>

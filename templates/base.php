@@ -115,12 +115,23 @@ function renderPage(string $title, callable $body, array $opts = []): void {
         // custom_forms table may not exist yet — silently ignore
     }
 
-    // Per-site visibility flags for the hardcoded form pages
+    // Per-site visibility flags
     $contactEnabled = setting('contact_page_enabled', '1') !== '0';
-    $prayerEnabled  = setting('prayer_page_enabled',  '1') !== '0';
+    $blogEnabled    = setting('blog_enabled',          '0') === '1';
 
     // Only show the Forms dropdown if at least one item is visible
-    $showFormsNav = $contactEnabled || $prayerEnabled || !empty($cmsNavForms);
+    $showFormsNav = $contactEnabled || !empty($cmsNavForms);
+
+    // Donation links
+    $paypalLink = setting('paypal_link', '');
+    $venmoLink  = setting('venmo_link', '');
+
+    // Newsletter signup
+    $ccSignupEnabled = setting('newsletter_signup_enabled', '1') === '1'
+                    && setting('constant_contact_api_key', '') !== '';
+
+    // Session ID cookie for analytics duration tracking
+    $analyticsSessionId = $_COOKIE['cms_asid'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -280,9 +291,16 @@ function renderPage(string $title, callable $body, array $opts = []): void {
     <?php endif; ?>
     <?php endforeach; ?>
 
+    <?php if ($blogEnabled): ?>
+    <a href="<?= siteUrl('blog') ?>"
+       class="<?= str_starts_with($currentPath, '/blog') ? 'current' : '' ?>">
+      <?= h(setting('blog_nav_label', 'Blog')) ?>
+    </a>
+    <?php endif; ?>
+
     <?php if ($showFormsNav):
     $formsActive = (
-        in_array($currentPath, ['/forms', '/contact', '/prayer']) ||
+        in_array($currentPath, ['/forms', '/contact']) ||
         str_starts_with($currentPath, '/forms/')
     ) ? 'current' : '';
     ?>
@@ -293,9 +311,6 @@ function renderPage(string $title, callable $body, array $opts = []): void {
       <div class="nav-dropdown">
         <?php if ($contactEnabled): ?>
         <a href="<?= siteUrl('contact') ?>" class="<?= $currentPath === '/contact' ? 'current' : '' ?>">Contact Us</a>
-        <?php endif; ?>
-        <?php if ($prayerEnabled): ?>
-        <a href="<?= siteUrl('prayer') ?>"  class="<?= $currentPath === '/prayer'  ? 'current' : '' ?>">Prayer Request</a>
         <?php endif; ?>
         <?php foreach ($cmsNavForms as $cf): ?>
         <a href="<?= siteUrl('forms/' . $cf['slug']) ?>"
@@ -327,44 +342,150 @@ document.addEventListener('click', function(e) {
 <?php $body(); ?>
 </main>
 
+<?php if ($ccSignupEnabled): ?>
+<!-- Newsletter Sign-Up Widget -->
+<section class="newsletter-section" aria-label="Newsletter sign-up">
+  <div class="newsletter-inner">
+    <h2 class="newsletter-heading"><?= h(setting('newsletter_signup_label', 'Stay Connected — Join Our Newsletter')) ?></h2>
+    <p class="newsletter-subtext">Get news and updates from MCC Our Redeemer delivered to your inbox.</p>
+    <form class="newsletter-form" id="newsletter-form" novalidate>
+      <div class="newsletter-fields">
+        <input type="text"  name="first_name" placeholder="First name"  class="newsletter-input" autocomplete="given-name">
+        <input type="text"  name="last_name"  placeholder="Last name"   class="newsletter-input" autocomplete="family-name">
+        <input type="email" name="email"      placeholder="Your email"  class="newsletter-input" required autocomplete="email">
+        <button type="submit" class="newsletter-btn">Subscribe</button>
+      </div>
+      <div id="newsletter-msg" class="newsletter-msg" role="alert" aria-live="polite"></div>
+    </form>
+  </div>
+</section>
+<script nonce="<?= $nonce ?>">
+(function() {
+  var form = document.getElementById('newsletter-form');
+  if (!form) return;
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var msg = document.getElementById('newsletter-msg');
+    var btn = form.querySelector('button[type=submit]');
+    msg.textContent = '';
+    msg.className = 'newsletter-msg';
+    btn.disabled = true;
+    btn.textContent = 'Subscribing…';
+    var data = new FormData(form);
+    fetch('<?= siteUrl('api/cc-signup') ?>', { method: 'POST', body: data })
+      .then(function(r) { return r.json(); })
+      .then(function(j) {
+        if (j.ok) {
+          msg.textContent = 'Thank you! You have been added to our newsletter.';
+          msg.classList.add('newsletter-msg-success');
+          form.reset();
+        } else {
+          msg.textContent = j.error || 'Something went wrong. Please try again.';
+          msg.classList.add('newsletter-msg-error');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Subscribe';
+      })
+      .catch(function() {
+        msg.textContent = 'Network error. Please try again.';
+        msg.classList.add('newsletter-msg-error');
+        btn.disabled = false;
+        btn.textContent = 'Subscribe';
+      });
+  });
+})();
+</script>
+<?php endif; ?>
+
 <!-- Footer -->
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-col">
       <h3><?= h($siteName) ?></h3>
       <p><?= h($siteTag) ?></p>
-      <p style="margin-top:10px; font-style:italic;">Pax et Bonum</p>
+      <?php if ($paypalLink || $venmoLink): ?>
+      <div class="footer-donate" style="margin-top:16px;">
+        <p style="font-weight:600; margin-bottom:10px; color:var(--color-accent-light, #F0C040);">Support Our Church</p>
+        <?php if ($paypalLink): ?>
+        <a href="<?= h($paypalLink) ?>" class="footer-donate-btn footer-donate-paypal"
+           target="_blank" rel="noopener noreferrer">
+          &#128179; Give via PayPal
+        </a>
+        <?php endif; ?>
+        <?php if ($venmoLink): ?>
+        <a href="<?= h($venmoLink) ?>" class="footer-donate-btn footer-donate-venmo"
+           target="_blank" rel="noopener noreferrer">
+          &#128172; Give via Venmo
+        </a>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
     </div>
     <div class="footer-col">
       <h3>Pages</h3>
       <?php foreach ($topNavPages as $np): ?>
         <a href="<?= siteUrl($np['slug']) ?>"><?= h($np['nav_label'] ?: $np['title']) ?></a>
       <?php endforeach; ?>
-      <a href="<?= siteUrl('blog') ?>">Blog</a>
-      <a href="<?= siteUrl('forms') ?>">Forms</a>
+      <?php if ($blogEnabled): ?>
+      <a href="<?= siteUrl('blog') ?>"><?= h(setting('blog_nav_label', 'Blog')) ?></a>
+      <?php endif; ?>
+      <?php if ($contactEnabled): ?>
+      <a href="<?= siteUrl('contact') ?>">Contact</a>
+      <?php endif; ?>
+      <a href="<?= siteUrl('board') ?>">Leadership</a>
     </div>
     <div class="footer-col">
-      <h3>Contact</h3>
+      <h3>Contact Us</h3>
       <address>
         <?= h($siteName) ?><br>
-        <?= nl2br(h(setting('parish_address', ''))) ?>
+        <?php if (setting('parish_address')): ?>
+        <?= nl2br(h(setting('parish_address', ''))) ?><br>
+        <?php endif; ?>
+        <?php if (setting('parish_city') || setting('parish_state')): ?>
+        <?= h(setting('parish_city', 'Augusta')) ?>, <?= h(setting('parish_state', 'GA')) ?><br>
+        <?php endif; ?>
         <?php if (setting('parish_phone')): ?>
-          <br><a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a>
+          <a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a><br>
         <?php endif; ?>
         <?php if (setting('admin_email')): ?>
-          <br><a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a>
+          <a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a>
         <?php endif; ?>
       </address>
     </div>
   </div>
   <div class="footer-bottom">
     &copy; <?= date('Y') ?> <?= h($siteName) ?> &mdash;
+    Metropolitan Community Church of Our Redeemer, Augusta, GA &mdash;
     <a href="<?= siteUrl('privacy-policy') ?>">Privacy Policy</a> &mdash;
-    Built with the OurSaintFrancis CMS &mdash;
     <a href="<?= siteUrl('admin/') ?>">Admin</a>
   </div>
 </footer>
 
+<?php if (setting('analytics_enabled', '1') && $analyticsSessionId): ?>
+<script nonce="<?= $nonce ?>">
+// Send page duration to analytics via beacon on unload
+(function() {
+  var start = Date.now();
+  var sid = <?= json_encode($analyticsSessionId) ?>;
+  var url = <?= json_encode($_SERVER['REQUEST_URI'] ?? '/') ?>;
+  function ping() {
+    var dur = Math.round((Date.now() - start) / 1000);
+    if (dur < 2) return;
+    var data = new FormData();
+    data.append('sid', sid);
+    data.append('url', url);
+    data.append('dur', dur);
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(<?= json_encode(siteUrl('api/analytics-ping')) ?>, data);
+    }
+  }
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') ping();
+  });
+  window.addEventListener('pagehide', ping);
+})();
+</script>
+<?php endif; ?>
 </body>
 </html>
 <?php } ?>

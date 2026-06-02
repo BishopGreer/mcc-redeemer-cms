@@ -125,51 +125,14 @@ if (str_starts_with($uri, '/admin')) {
         $section === 'updates'      => require BASE_PATH . '/admin/updates.php',
         $section === 'ajax'         => require BASE_PATH . '/admin/ajax/' . (preg_replace('/[^a-z0-9-]/', '', $parts[1] ?? 'latest-post')) . '.php',
         $section === 'users'        => require BASE_PATH . '/admin/users.php',
-        $section === 'social'       => (function() use ($parts) {
-            $action = $parts[1] ?? '';
-            match ($action) {
-                'facebook-connect'  => require BASE_PATH . '/admin/social/facebook-connect.php',
-                'facebook-callback' => require BASE_PATH . '/admin/social/facebook-callback.php',
-                'threads-connect'   => require BASE_PATH . '/admin/social/threads-connect.php',
-                'threads-callback'  => require BASE_PATH . '/admin/social/threads-callback.php',
-                default             => redirect(siteUrl('admin/settings')),
-            };
-        })(),
-        $section === 'forms'        => require BASE_PATH . '/admin/forms.php',
-        $section === 'contacts'        => require BASE_PATH . '/admin/contacts.php',
-        $section === 'prayers'         => require BASE_PATH . '/admin/prayers.php',
-        $section === 'contact-prayer'  => require BASE_PATH . '/admin/contact-prayer.php',
-        $section === 'categories'      => require BASE_PATH . '/admin/categories.php',
-        $section === 'tags'            => require BASE_PATH . '/admin/tags.php',
-        $section === 'parish-locator' => require BASE_PATH . '/admin/parish-locator.php',
-        $section === 'clergy'           => require BASE_PATH . '/admin/clergy.php',
-        $section === 'daily-readings'   => require BASE_PATH . '/admin/daily-readings.php',
-        $section === 'records'      => (function() use ($parts) {
-            if (Database::siteId() !== 1) {
-                http_response_code(403);
-                echo '<h1>Access denied.</h1><p>Sacramental Records are only available on the main site.</p>';
-                return;
-            }
-            $sub    = $parts[1] ?? '';
-            $recId  = isset($parts[2]) && is_numeric($parts[2]) ? (int)$parts[2] : 0;
-            $recAct = $parts[3] ?? '';
-            if (!$recAct && ($parts[2] ?? '') === 'new') $recAct = 'new';
-            if ($recId)  $_GET['id']     = $recId;
-            if ($recAct) $_GET['action'] = $recAct;
-            $registers = ['baptisms','confirmations','marriages','deaths','communions',
-                          'ordinations','ocia','attendance','donations','psr','report','certificates','parishes','settings'];
-            if (in_array($sub, $registers)) {
-                require BASE_PATH . '/admin/records/' . $sub . '.php';
-            } elseif ($sub === 'directory' && ($recId || $recAct === 'new')) {
-                require BASE_PATH . '/admin/records/directory-edit.php';
-            } elseif ($sub === 'directory-print') {
-                require BASE_PATH . '/admin/records/directory-print.php';
-            } elseif ($sub === 'directory') {
-                require BASE_PATH . '/admin/records/directory.php';
-            } else {
-                require BASE_PATH . '/admin/records/index.php';
-            }
-        })(),
+        $section === 'forms'          => require BASE_PATH . '/admin/forms.php',
+        $section === 'contacts'       => require BASE_PATH . '/admin/contacts.php',
+        $section === 'contact-prayer' => require BASE_PATH . '/admin/contact-prayer.php',
+        $section === 'categories'     => require BASE_PATH . '/admin/categories.php',
+        $section === 'tags'           => require BASE_PATH . '/admin/tags.php',
+        $section === 'board' && ($subact === 'edit' || $adminPath === 'board/new')
+                                      => require BASE_PATH . '/admin/board-edit.php',
+        $section === 'board'          => require BASE_PATH . '/admin/board.php',
         default => (function() { http_response_code(404); echo '<h1>Admin page not found.</h1>'; })(),
     };
     exit;
@@ -193,16 +156,17 @@ if (str_starts_with($uri, '/api')) {
 if ($uri === '/sitemap.xml') {
     $base = rtrim(SITE_URL, '/');
 
-    $staticUrls = [
-        ['loc' => $base . '/',         'changefreq' => 'weekly',  'priority' => '1.0'],
-        ['loc' => $base . '/blog',      'changefreq' => 'daily',   'priority' => '0.9'],
-        ['loc' => $base . '/forms',          'changefreq' => 'monthly', 'priority' => '0.5'],
-        ['loc' => $base . '/contact',        'changefreq' => 'monthly', 'priority' => '0.5'],
-        ['loc' => $base . '/prayer',         'changefreq' => 'monthly', 'priority' => '0.5'],
-        ['loc' => $base . '/find-a-parish',     'changefreq' => 'weekly',  'priority' => '0.7'],
-        ['loc' => $base . '/clergy-directory', 'changefreq' => 'weekly',  'priority' => '0.7'],
-        ['loc' => $base . '/daily-readings',   'changefreq' => 'daily',   'priority' => '0.8'],
-    ];
+    $blogEnabled = setting('blog_enabled', '0') === '1';
+    $staticUrls = array_filter([
+        ['loc' => $base . '/',      'changefreq' => 'weekly',  'priority' => '1.0'],
+        ['loc' => $base . '/board', 'changefreq' => 'monthly', 'priority' => '0.7'],
+        setting('contact_page_enabled', '1') !== '0'
+            ? ['loc' => $base . '/contact', 'changefreq' => 'monthly', 'priority' => '0.5']
+            : null,
+        $blogEnabled
+            ? ['loc' => $base . '/blog', 'changefreq' => 'daily', 'priority' => '0.9']
+            : null,
+    ]);
 
     $pages = Database::fetchAll(
         "SELECT slug, updated_at FROM pages WHERE site_id = ? AND status = 'published' AND slug != 'home' ORDER BY menu_order ASC",
@@ -274,7 +238,7 @@ if ($uri === '/llms.txt') {
 
     echo "# {$siteName}\n\n";
     echo "> {$siteTag}\n\n";
-    echo "{$siteName} is a Roman Catholic parish in the Catholic tradition. ";
+    echo "{$siteName} is an inclusive Christian church in Augusta, Georgia, part of Metropolitan Community Churches. ";
     echo "This file helps AI systems understand our site's structure and content.\n\n";
 
     if ($address || $phone || $email) {
@@ -286,10 +250,9 @@ if ($uri === '/llms.txt') {
     }
 
     echo "## Main Pages\n\n";
-    echo "- [Home]({$base}/): Parish homepage with mass times, news, and community information.\n";
-    echo "- [Blog / Parish News]({$base}/blog): Announcements, reflections, and community updates.\n";
-    echo "- [Contact Us]({$base}/contact): Contact form for reaching the parish office.\n";
-    echo "- [Prayer Requests]({$base}/prayer): Submit a prayer request to the parish.\n";
+    echo "- [Home]({$base}/): Church homepage with service times, news, and community information.\n";
+    echo "- [Board of Directors]({$base}/board): Our church leadership and board members.\n";
+    echo "- [Contact Us]({$base}/contact): Contact form for reaching the church office.\n";
 
     foreach ($pages as $p) {
         $desc = trim($p['meta_desc'] ?: $p['excerpt'] ?: '');
@@ -308,20 +271,40 @@ if ($uri === '/llms.txt') {
     }
 
     echo "\n## Notes for AI Systems\n\n";
-    echo "- This is an official Roman Catholic parish website.\n";
-    echo "- Content is provided for the parish community and the general public.\n";
-    echo "- Personal data (contact forms, registrations) is not publicly indexed.\n";
-    echo "- Scripture references follow the Catholic canon.\n";
+    echo "- This is the official website of MCC Our Redeemer, Augusta, GA.\n";
+    echo "- MCC (Metropolitan Community Churches) is an inclusive, affirming Christian denomination.\n";
+    echo "- Content is provided for the church community and the general public.\n";
+    echo "- Personal data (contact forms) is not publicly indexed.\n";
 
     exit;
 }
 
 // -------------------------------------------------------
-// Track page view (exclude admin/api)
+// Analytics API — record page duration via JS beacon
 // -------------------------------------------------------
-if (setting('analytics_enabled', '1') && !(Auth::check() && setting('analytics_exclude_admins', '1'))) {
-    Analytics::track();
+if ($uri === '/api/analytics-ping' && $method === 'POST') {
+    require_once BASE_PATH . '/core/Analytics.php';
+    $sessionId = preg_replace('/[^a-f0-9]/', '', $_POST['sid'] ?? '');
+    $url       = substr($_POST['url'] ?? '', 0, 500);
+    $dur       = (int)($_POST['dur'] ?? 0);
+    if ($sessionId && $url && $dur > 0) {
+        Analytics::recordDuration($sessionId, $url, $dur);
+    }
+    http_response_code(204);
+    exit;
 }
+
+// Constant Contact newsletter signup
+if ($uri === '/api/cc-signup') {
+    require BASE_PATH . '/api/cc-signup.php';
+    exit;
+}
+
+// -------------------------------------------------------
+// Track page view — analytics (server-side, no outside services)
+// -------------------------------------------------------
+require_once BASE_PATH . '/core/Analytics.php';
+Analytics::track();
 
 // -------------------------------------------------------
 // Public routing
@@ -340,21 +323,9 @@ if (preg_match('#^/forms/([a-z0-9-]+)$#', $uri, $fm)) {
     exit;
 }
 
-// Parish Locator
-if ($uri === '/find-a-parish') {
-    require BASE_PATH . '/templates/parish-locator.php';
-    exit;
-}
-
-// Clergy Directory
-if ($uri === '/clergy-directory') {
-    require BASE_PATH . '/templates/clergy.php';
-    exit;
-}
-
-// Daily Readings
-if ($uri === '/daily-readings') {
-    require BASE_PATH . '/templates/daily-readings.php';
+// Board of Directors / Leadership
+if ($uri === '/board' || $uri === '/board-of-directors') {
+    require BASE_PATH . '/templates/board.php';
     exit;
 }
 
@@ -369,31 +340,30 @@ if ($uri === '/contact') {
     exit;
 }
 
-// Prayer request — gated by per-site setting (enabled by default)
-if ($uri === '/prayer') {
-    if (setting('prayer_page_enabled', '1') === '0') {
-        http_response_code(404);
-        require BASE_PATH . '/templates/404.php';
-        exit;
-    }
-    require BASE_PATH . '/templates/prayer.php';
-    exit;
-}
-
 // Home
 if ($uri === '/') {
     require BASE_PATH . '/templates/home.php';
     exit;
 }
 
-// Blog listing
+// Blog — gated by blog_enabled setting
 if ($uri === '/blog') {
+    if (setting('blog_enabled', '0') === '0') {
+        http_response_code(404);
+        require BASE_PATH . '/templates/404.php';
+        exit;
+    }
     require BASE_PATH . '/templates/blog.php';
     exit;
 }
 
-// Single blog post
+// Single blog post — also gated
 if (preg_match('#^/blog/([a-z0-9-]+)$#', $uri, $m)) {
+    if (setting('blog_enabled', '0') === '0') {
+        http_response_code(404);
+        require BASE_PATH . '/templates/404.php';
+        exit;
+    }
     $post = Database::fetch(
         "SELECT * FROM posts WHERE slug = ? AND site_id = ? AND status = 'published' AND published_at <= NOW()",
         [$m[1], Database::siteId()]

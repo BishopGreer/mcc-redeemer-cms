@@ -1,5 +1,5 @@
 <?php
-// Parish CMS — configuration
+// MCC Our Redeemer CMS — configuration
 //
 // config.local.php is loaded FIRST so its values take priority.
 // Constants defined here are only defaults used when config.local.php
@@ -18,7 +18,7 @@ unset($_basePath, $_localConfig);
 // ---- Defaults (only applied if config.local.php did not define them) ----
 
 if (!defined('DB_HOST'))    define('DB_HOST',    'localhost');
-if (!defined('DB_NAME'))    define('DB_NAME',    'parish_cms');
+if (!defined('DB_NAME'))    define('DB_NAME',    'mcc_redeemer');
 if (!defined('DB_USER'))    define('DB_USER',    'db_user');
 if (!defined('DB_PASS'))    define('DB_PASS',    'db_password');
 if (!defined('DB_CHARSET')) define('DB_CHARSET', 'utf8mb4');
