@@ -4532,3 +4532,309 @@ select.form-control {
     scroll-behavior: auto !important;
   }
 }
+
+
+/* ============================================================
+   MCC GIVE V1
+   ============================================================ */
+
+.mcc-give-v1,
+.mcc-give-v1 * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.mcc-give-v1 {
+  color: #2d2d2d;
+}
+
+.mcc-give-v1 a {
+  color: #6b3fa0;
+}
+
+.mcc-give-v1 a:hover {
+  color: #52307a;
+}
+
+.mcc-give-v1__hero,
+.mcc-give-v1__section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.mcc-give-v1__hero {
+  padding-top: 56px;
+  padding-bottom: 44px;
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 184, 0.14), transparent 34%),
+    linear-gradient(135deg, #f8f3ee 0%, #fffdf9 50%, #f4eee7 100%);
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-give-v1__kicker,
+.mcc-give-v1__eyebrow {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(107, 63, 160, 0.08);
+  color: #52307a;
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mcc-give-v1__hero h1,
+.mcc-give-v1__heading h2,
+.mcc-give-v1__intro-copy h2,
+.mcc-give-v1__panel h2,
+.mcc-give-v1__cta-card h2 {
+  margin: 0 0 12px;
+  color: #52307a;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.mcc-give-v1__hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.7rem);
+  max-width: 14ch;
+}
+
+.mcc-give-v1__lead {
+  max-width: 68ch;
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.mcc-give-v1__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.mcc-give-v1__section {
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.mcc-give-v1__section--soft {
+  background: linear-gradient(180deg, #fffdf9 0%, #f8f2eb 100%);
+  border-top: 1px solid #ddd5c8;
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-give-v1__section--alt {
+  background: linear-gradient(180deg, #f6efe8 0%, #fdfaf5 100%);
+  border-top: 1px solid #ddd5c8;
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-give-v1__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.mcc-give-v1__info,
+.mcc-give-v1__card,
+.mcc-give-v1__panel,
+.mcc-give-v1__serve-item {
+  background: #ffffff;
+  border: 1px solid #ddd5c8;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 24px rgba(58, 36, 96, 0.05);
+  height: 100%;
+}
+
+.mcc-give-v1__info h3,
+.mcc-give-v1__card h3,
+.mcc-give-v1__serve-item h3 {
+  margin: 0 0 10px;
+  color: #6b3fa0;
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.mcc-give-v1__info ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.mcc-give-v1__info li {
+  margin-bottom: 10px;
+}
+
+.mcc-give-v1__heading {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 28px;
+}
+
+.mcc-give-v1__heading p {
+  margin: 0;
+  color: #6b6b6b;
+}
+
+.mcc-give-v1__grid,
+.mcc-give-v1__serve-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.mcc-give-v1__card p:last-child,
+.mcc-give-v1__panel p:last-child,
+.mcc-give-v1__serve-item p:last-child {
+  margin-bottom: 0;
+}
+
+.mcc-give-v1__two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.mcc-give-v1__cta-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(107, 63, 160, 0.96), rgba(82, 48, 122, 0.95));
+  color: #ffffff;
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 16px 36px rgba(58, 36, 96, 0.12);
+}
+
+.mcc-give-v1__cta-card h2,
+.mcc-give-v1__cta-card a,
+.mcc-give-v1__cta-card .mcc-give-v1__eyebrow {
+  color: #ffffff;
+}
+
+.mcc-give-v1__cta-card .mcc-give-v1__eyebrow {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.mcc-give-v1__cta-card p:last-child {
+  margin-bottom: 0;
+}
+
+.mcc-give-v1__cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.mcc-give-v1__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+
+.mcc-give-v1__btn--primary {
+  background: #6b3fa0;
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(107, 63, 160, 0.18);
+}
+
+.mcc-give-v1__btn--primary:hover {
+  background: #52307a;
+  color: #ffffff !important;
+  text-decoration: none;
+}
+
+.mcc-give-v1__btn--secondary {
+  background: #ffffff;
+  border: 2px solid #6b3fa0;
+  color: #6b3fa0 !important;
+}
+
+.mcc-give-v1__btn--secondary:hover {
+  background: #6b3fa0;
+  color: #ffffff !important;
+  text-decoration: none;
+}
+
+.mcc-give-v1__cta-card .mcc-give-v1__btn--primary {
+  background: #ffffff;
+  color: #52307a !important;
+  box-shadow: none;
+}
+
+.mcc-give-v1__cta-card .mcc-give-v1__btn--primary:hover {
+  background: #f3eefe;
+  color: #52307a !important;
+}
+
+.mcc-give-v1__cta-card .mcc-give-v1__btn--secondary {
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  color: #ffffff !important;
+}
+
+.mcc-give-v1__cta-card .mcc-give-v1__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff !important;
+}
+
+@media (max-width: 900px) {
+  .mcc-give-v1__hero h1 {
+    max-width: none;
+  }
+
+  .mcc-give-v1__intro,
+  .mcc-give-v1__two-col,
+  .mcc-give-v1__cta-card {
+    grid-template-columns: 1fr;
+  }
+
+  .mcc-give-v1__cta-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .mcc-give-v1__hero,
+  .mcc-give-v1__section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .mcc-give-v1__hero,
+  .mcc-give-v1__section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .mcc-give-v1__hero-actions,
+  .mcc-give-v1__cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mcc-give-v1__btn {
+    width: 100%;
+  }
+}
