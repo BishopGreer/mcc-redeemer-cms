@@ -46,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ip'      => $_SERVER['REMOTE_ADDR'] ?? null,
         ]);
 
-        // Notify — use contact_email if set, otherwise fall back to admin_email
         $notifyEmail = setting('contact_email') ?: setting('admin_email');
         if ($notifyEmail) {
             $html = '<h2>New Contact Form Submission</h2>'
@@ -54,14 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   . ($values['phone'] ? '<p><strong>Phone:</strong> ' . htmlspecialchars($values['phone']) . '</p>' : '')
                   . '<p><strong>Subject:</strong> ' . htmlspecialchars($values['subject']) . '</p>'
                   . '<hr><p>' . nl2br(htmlspecialchars($values['message'])) . '</p>';
-            Mailer::send($notifyEmail, 'Parish Admin', 'Contact Form: ' . ($values['subject'] ?: 'New Message'), $html);
+            Mailer::send($notifyEmail, 'MCC Our Redeemer', 'Contact Form: ' . ($values['subject'] ?: 'New Message'), $html);
         }
 
         $success = true;
     }
 }
 
-$intro = setting('form_intro_contact', 'We would love to hear from you. Fill out the form below and a member of our parish staff will be in touch soon.');
+$intro = setting('form_intro_contact', 'We would love to hear from you. Fill out the form below and a member of our staff will be in touch soon.');
 
 $contactPage = Database::fetch(
     "SELECT content FROM pages WHERE slug = 'contact' AND site_id = ? AND status IN ('published','private')",
@@ -71,68 +70,67 @@ $contactPage = Database::fetch(
 renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $contactPage) {
 ?>
 
-<div class="page-wrap">
+<div class="page-wrap" style="max-width: var(--wrap-wide);">
 
   <?php if (!empty($contactPage['content'])): ?>
-  <div class="page-content entry-content" style="margin-bottom: 32px;">
+  <div class="entry-content" style="max-width: 860px; margin: 0 auto 2rem;">
     <?= $contactPage['content'] ?>
   </div>
   <?php endif; ?>
 
-  <div class="pub-form-wrap">
+  <div class="contact-form">
 
-    <div class="pub-form-header">
-      <h1 class="entry-title">Contact Us</h1>
-      <p class="pub-form-intro"><?= h($intro) ?></p>
+    <div style="margin-bottom: 1.75rem;">
+      <h1 style="margin-bottom: 0.4rem;">Contact Us</h1>
+      <p style="color: var(--color-text-muted); margin: 0;"><?= h($intro) ?></p>
     </div>
 
     <?php if ($success): ?>
-      <div class="pub-form-success">
-        <div class="pub-form-success-icon">&#10003;</div>
-        <h2>Message Sent</h2>
+      <div class="alert alert-success" style="text-align: center; padding: 2.5rem 2rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">&#10003;</div>
+        <h2 style="margin-bottom: 0.5rem;">Message Sent</h2>
         <p>Thank you, <?= h($values['name']) ?>. We have received your message and will reply to
         <strong><?= h($values['email']) ?></strong> shortly.</p>
-        <p><em>Pax et Bonum</em></p>
-        <a href="<?= siteUrl() ?>" class="btn-outline" style="margin-top:16px;">Return to Home</a>
+        <a href="<?= siteUrl() ?>" class="btn btn-primary" style="margin-top: 1.25rem;">Return to Home</a>
       </div>
     <?php else: ?>
 
       <?php if ($errors): ?>
-        <div class="pub-form-errors">
+        <div class="alert alert-error" style="margin-bottom: 1.5rem;">
           <?php foreach ($errors as $e): ?>
             <div>&#9679; <?= h($e) ?></div>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
 
-      <form method="post" class="pub-form" novalidate>
+      <form method="post" novalidate>
         <?= csrfField() ?>
 
-        <div class="pub-form-row two-up">
-          <div class="pub-form-group">
-            <label for="cf-name">Full Name <span class="req">*</span></label>
-            <input type="text" id="cf-name" name="name" class="pub-input"
+        <div class="form-row-two">
+          <div class="form-group">
+            <label class="form-label form-label-required" for="cf-name">Full Name</label>
+            <input type="text" id="cf-name" name="name" class="form-control"
                    value="<?= h($values['name']) ?>" required autocomplete="name">
           </div>
-          <div class="pub-form-group">
-            <label for="cf-email">Email Address <span class="req">*</span></label>
-            <input type="email" id="cf-email" name="email" class="pub-input"
+          <div class="form-group">
+            <label class="form-label form-label-required" for="cf-email">Email Address</label>
+            <input type="email" id="cf-email" name="email" class="form-control"
                    value="<?= h($values['email']) ?>" required autocomplete="email">
           </div>
         </div>
 
-        <div class="pub-form-row two-up">
-          <div class="pub-form-group">
-            <label for="cf-phone">Phone <span class="pub-optional">(optional)</span></label>
-            <input type="tel" id="cf-phone" name="phone" class="pub-input"
+        <div class="form-row-two">
+          <div class="form-group">
+            <label class="form-label" for="cf-phone">Phone <span style="font-weight:400; color:var(--color-text-muted);">(optional)</span></label>
+            <input type="tel" id="cf-phone" name="phone" class="form-control"
                    value="<?= h($values['phone']) ?>" autocomplete="tel">
           </div>
-          <div class="pub-form-group">
-            <label for="cf-subject">Subject</label>
-            <select id="cf-subject" name="subject" class="pub-input">
+          <div class="form-group">
+            <label class="form-label" for="cf-subject">Subject</label>
+            <select id="cf-subject" name="subject" class="form-control">
               <?php
-              $subjects = ['General Inquiry','Sacraments','Religious Education',
-                           'Volunteer Opportunities','Prayer Request','Other'];
+              $subjects = ['General Inquiry','Prayer Request','Worship & Services',
+                           'Volunteer Opportunities','Membership','Other'];
               foreach ($subjects as $sub):
               ?>
                 <option value="<?= h($sub) ?>" <?= $values['subject']===$sub ? 'selected':'' ?>>
@@ -143,47 +141,50 @@ renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $co
           </div>
         </div>
 
-        <div class="pub-form-group">
-          <label for="cf-message">Message <span class="req">*</span></label>
-          <textarea id="cf-message" name="message" class="pub-input" rows="7"
+        <div class="form-group">
+          <label class="form-label form-label-required" for="cf-message">Message</label>
+          <textarea id="cf-message" name="message" class="form-control" rows="8"
                     required><?= h($values['message']) ?></textarea>
         </div>
 
         <?php if (setting('hcaptcha_site_key')): ?>
-          <div class="pub-form-group">
+          <div class="form-group">
             <div class="h-captcha" data-sitekey="<?= h(setting('hcaptcha_site_key')) ?>"></div>
           </div>
         <?php endif; ?>
 
-        <div class="pub-form-actions">
-          <button type="submit" class="pub-btn-primary">Send Message</button>
+        <div style="margin-top: 1.5rem;">
+          <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
         </div>
+
       </form>
 
     <?php endif; ?>
 
-    <div class="pub-form-contact-info">
+    <?php if (setting('parish_address') || setting('parish_phone') || setting('admin_email')): ?>
+    <div class="contact-info" style="margin-top: 2.5rem; border-top: 1px solid var(--color-border); padding-top: 2rem;">
       <?php if (setting('parish_address')): ?>
-        <div class="pub-contact-item">
-          <span class="pub-contact-icon">&#9679;</span>
+        <div class="contact-info-item">
+          <span class="contact-info-icon">&#128205;</span>
           <div><?= nl2br(h(setting('parish_address'))) ?></div>
         </div>
       <?php endif; ?>
       <?php if (setting('parish_phone')): ?>
-        <div class="pub-contact-item">
-          <span class="pub-contact-icon">&#9829;</span>
+        <div class="contact-info-item">
+          <span class="contact-info-icon">&#128222;</span>
           <div><a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a></div>
         </div>
       <?php endif; ?>
       <?php if (setting('admin_email')): ?>
-        <div class="pub-contact-item">
-          <span class="pub-contact-icon">&#9993;</span>
+        <div class="contact-info-item">
+          <span class="contact-info-icon">&#9993;</span>
           <div><a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a></div>
         </div>
       <?php endif; ?>
     </div>
+    <?php endif; ?>
 
   </div>
 </div>
 
-<?php }, ['meta_desc' => 'Contact Your Parish.', 'hcaptcha' => true]); ?>
+<?php }, ['meta_desc' => 'Contact MCC Our Redeemer in Augusta, GA.', 'hcaptcha' => true]); ?>
