@@ -6,7 +6,6 @@ $values  = ['name'=>'','email'=>'','phone'=>'','subject'=>'','message'=>''];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::verifyCsrf();
 
-    // hCaptcha
     $hcSecret = setting('hcaptcha_secret_key');
     if ($hcSecret) {
         $hcResponse = $_POST['h-captcha-response'] ?? '';
@@ -67,17 +66,21 @@ $contactPage = Database::fetch(
     [Database::siteId()]
 );
 
-renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $contactPage) {
+$hasInfo = setting('parish_address') || setting('parish_phone') || setting('admin_email')
+        || setting('parish_city') || setting('worship_times');
+
+renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $contactPage, $hasInfo) {
 ?>
 
-<div class="page-wrap" style="max-width: var(--wrap-wide);">
+<?php if (!empty($contactPage['content'])): ?>
+<div class="page-wrap" style="padding-bottom: 0;">
+  <div class="entry-content"><?= $contactPage['content'] ?></div>
+</div>
+<?php endif; ?>
 
-  <?php if (!empty($contactPage['content'])): ?>
-  <div class="entry-content" style="max-width: 860px; margin: 0 auto 2rem;">
-    <?= $contactPage['content'] ?>
-  </div>
-  <?php endif; ?>
+<div class="contact-page-wrap">
 
+  <!-- Form column -->
   <div class="contact-form">
 
     <div style="margin-bottom: 1.75rem;">
@@ -133,9 +136,7 @@ renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $co
                            'Volunteer Opportunities','Membership','Other'];
               foreach ($subjects as $sub):
               ?>
-                <option value="<?= h($sub) ?>" <?= $values['subject']===$sub ? 'selected':'' ?>>
-                  <?= h($sub) ?>
-                </option>
+                <option value="<?= h($sub) ?>" <?= $values['subject']===$sub ? 'selected':'' ?>><?= h($sub) ?></option>
               <?php endforeach; ?>
             </select>
           </div>
@@ -160,31 +161,56 @@ renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $co
       </form>
 
     <?php endif; ?>
+  </div>
 
-    <?php if (setting('parish_address') || setting('parish_phone') || setting('admin_email')): ?>
-    <div class="contact-info" style="margin-top: 2.5rem; border-top: 1px solid var(--color-border); padding-top: 2rem;">
-      <?php if (setting('parish_address')): ?>
-        <div class="contact-info-item">
-          <span class="contact-info-icon">&#128205;</span>
-          <div><?= nl2br(h(setting('parish_address'))) ?></div>
-        </div>
-      <?php endif; ?>
-      <?php if (setting('parish_phone')): ?>
-        <div class="contact-info-item">
-          <span class="contact-info-icon">&#128222;</span>
-          <div><a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a></div>
-        </div>
-      <?php endif; ?>
-      <?php if (setting('admin_email')): ?>
-        <div class="contact-info-item">
-          <span class="contact-info-icon">&#9993;</span>
-          <div><a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a></div>
-        </div>
-      <?php endif; ?>
+  <!-- Sidebar column -->
+  <?php if ($hasInfo): ?>
+  <div class="contact-sidebar">
+
+    <div class="contact-sidebar-card">
+      <h3>Find Us</h3>
+      <div class="contact-info">
+        <?php if (setting('parish_address') || setting('parish_city')): ?>
+          <div class="contact-info-item">
+            <span class="contact-info-icon">&#128205;</span>
+            <div>
+              <?php if (setting('parish_address')): ?>
+                <?= nl2br(h(setting('parish_address'))) ?><br>
+              <?php endif; ?>
+              <?php if (setting('parish_city') || setting('parish_state')): ?>
+                <?= h(setting('parish_city', 'Augusta')) ?>, <?= h(setting('parish_state', 'GA')) ?>
+                <?php if (setting('parish_zip')): ?> <?= h(setting('parish_zip')) ?><?php endif; ?>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+        <?php if (setting('parish_phone')): ?>
+          <div class="contact-info-item">
+            <span class="contact-info-icon">&#128222;</span>
+            <div><a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a></div>
+          </div>
+        <?php endif; ?>
+        <?php if (setting('admin_email')): ?>
+          <div class="contact-info-item">
+            <span class="contact-info-icon">&#9993;</span>
+            <div><a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a></div>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <?php if (setting('worship_times')): ?>
+    <div class="contact-sidebar-card">
+      <h3>Worship Times</h3>
+      <div style="font-size: 0.95rem; line-height: 1.7;">
+        <?= nl2br(h(setting('worship_times'))) ?>
+      </div>
     </div>
     <?php endif; ?>
 
   </div>
+  <?php endif; ?>
+
 </div>
 
 <?php }, ['meta_desc' => 'Contact MCC Our Redeemer in Augusta, GA.', 'hcaptcha' => true]); ?>
