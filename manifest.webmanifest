@@ -1,0 +1,21 @@
+{
+  "name": "Your Parish",
+  "short_name": "Saint Francis",
+  "description": "A Community of Faith",
+  "start_url": "/",
+  "display": "browser",
+  "theme_color": "#4a3728",
+  "background_color": "#fdf6ec",
+  "icons": [
+    {
+      "src": "/public/assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/public/assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

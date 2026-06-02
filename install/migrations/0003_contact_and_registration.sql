@@ -1,0 +1,13 @@
+-- Migration 0003: Contact form table
+
+CREATE TABLE IF NOT EXISTS `contact_submissions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(30) DEFAULT NULL,
+  `subject` VARCHAR(200) DEFAULT NULL,
+  `message` TEXT NOT NULL,
+  `ip` VARCHAR(45) DEFAULT NULL,
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

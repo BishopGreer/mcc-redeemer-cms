@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /install/
+Disallow: /config/
+Disallow: /core/
+
+Sitemap: https://your-site.org/sitemap.xml

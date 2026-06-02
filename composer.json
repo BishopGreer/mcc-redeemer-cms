@@ -1,0 +1,12 @@
+{
+  "name": "yourparish/cms",
+  "description": "Custom CMS for OurSaintFrancis.org",
+  "type": "project",
+  "require": {
+    "php": ">=8.1",
+    "phpmailer/phpmailer": "^6.8"
+  },
+  "config": {
+    "optimize-autoloader": true
+  }
+}

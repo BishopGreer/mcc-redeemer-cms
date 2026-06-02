@@ -1,0 +1,18 @@
+# Allow access to the installer only if install.lock does NOT exist.
+# Once installed, the installer redirects to admin — but this adds a
+# server-level gate so the install files can't be probed for info.
+
+# PHP files in this directory are allowed — the installer PHP itself
+# checks for install.lock and redirects. The .sql and .php files
+# in migrations/ are blocked from direct HTTP access.
+
+<FilesMatch "\.(sql)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # If install.lock exists, redirect all installer requests to admin
+  RewriteCond %{DOCUMENT_ROOT}/../config/install.lock -f
+  RewriteRule ^ /admin/ [R=302,L]
+</IfModule>
