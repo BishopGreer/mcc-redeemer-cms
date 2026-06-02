@@ -1170,6 +1170,20 @@ main#main-content {
 }
 /* ── End MCC About page styles ────────────────────────────────────────────── */
 
+/* ── Value grid (shared component) ───────────────────────────────────────── */
+.value-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.value-card h3 {
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
 /* Hero section */
 .home-hero {
   background: radial-gradient(ellipse at 60% 40%, #f0e6fa 0%, var(--color-bg) 70%);
