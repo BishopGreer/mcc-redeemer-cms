@@ -324,7 +324,7 @@ if (preg_match('#^/forms/([a-z0-9-]+)$#', $uri, $fm)) {
 }
 
 // Board of Directors / Leadership
-if ($uri === '/board' || $uri === '/board-of-directors' || $uri === '/leadership') {
+if ($uri === '/board' || $uri === '/board-of-directors') {
     require BASE_PATH . '/templates/board.php';
     exit;
 }
