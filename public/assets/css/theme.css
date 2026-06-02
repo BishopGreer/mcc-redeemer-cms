@@ -4891,6 +4891,39 @@ select.form-control {
   color: #ffffff !important;
 }
 
+.mcc-give-v1__method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.mcc-give-v1__method {
+  padding-top: 18px;
+  border-top: 1px solid #ddd5c8;
+}
+
+.mcc-give-v1__method strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #52307a;
+  font-size: 1rem;
+}
+
+.mcc-give-v1__method p {
+  margin: 0 0 12px;
+  color: #4b4b4b;
+}
+
+.mcc-give-v1__method p:last-child {
+  margin-bottom: 0;
+}
+
+.mcc-give-v1__method .mcc-give-v1__btn {
+  margin-top: 4px;
+  width: 100%;
+}
+
 @media (max-width: 900px) {
   .mcc-give-v1__hero h1 {
     max-width: none;
