@@ -1507,6 +1507,304 @@ main#main-content {
 }
 /* ── End MCC About v2 styles ─────────────────────────────────────────────── */
 
+/* ── MCC Worship page scoped styles ──────────────────────────────────────── */
+.mcc-worship,
+.mcc-worship * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.mcc-worship {
+  color: #2d2d2d;
+}
+
+.mcc-worship a {
+  color: #6b3fa0;
+}
+
+.mcc-worship a:hover {
+  color: #52307a;
+}
+
+.mcc-worship__hero,
+.mcc-worship__section,
+.mcc-worship__cta {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.mcc-worship__hero {
+  padding-top: 56px;
+  padding-bottom: 44px;
+  background:
+    radial-gradient(circle at top left, rgba(139, 92, 184, 0.14), transparent 34%),
+    linear-gradient(135deg, #f8f3ee 0%, #fffdf9 50%, #f4eee7 100%);
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-worship__kicker,
+.mcc-worship__eyebrow {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(107, 63, 160, 0.08);
+  color: #52307a;
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mcc-worship__kicker--light {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.mcc-worship__hero h1,
+.mcc-worship__heading h2,
+.mcc-worship__copy h2,
+.mcc-worship__panel h2,
+.mcc-worship__cta h2 {
+  margin: 0 0 12px;
+  color: #52307a;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.mcc-worship__hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  max-width: 13ch;
+}
+
+.mcc-worship__lead {
+  max-width: 68ch;
+  margin: 0;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.mcc-worship__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.mcc-worship__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.18s ease;
+}
+
+.mcc-worship__btn--primary {
+  background: #6b3fa0;
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(107, 63, 160, 0.18);
+}
+
+.mcc-worship__btn--primary:hover {
+  background: #52307a;
+  color: #ffffff !important;
+  text-decoration: none;
+}
+
+.mcc-worship__btn--secondary {
+  background: #ffffff;
+  border: 2px solid #6b3fa0;
+  color: #6b3fa0 !important;
+}
+
+.mcc-worship__btn--secondary:hover {
+  background: #6b3fa0;
+  color: #ffffff !important;
+  text-decoration: none;
+}
+
+.mcc-worship__section {
+  padding-top: 52px;
+  padding-bottom: 52px;
+}
+
+.mcc-worship__section--soft {
+  background: linear-gradient(180deg, #fffdf9 0%, #f8f2eb 100%);
+  border-top: 1px solid #ddd5c8;
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-worship__section--alt {
+  background: linear-gradient(180deg, #f6efe8 0%, #fdfaf5 100%);
+  border-top: 1px solid #ddd5c8;
+  border-bottom: 1px solid #ddd5c8;
+}
+
+.mcc-worship__section--cta {
+  background: linear-gradient(135deg, #52307a, #291943);
+  color: #ffffff;
+}
+
+.mcc-worship__info-grid,
+.mcc-worship__come-grid,
+.mcc-worship__ministry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.mcc-worship__info-card,
+.mcc-worship__card,
+.mcc-worship__quote-card,
+.mcc-worship__panel {
+  background: #ffffff;
+  border: 1px solid #ddd5c8;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 24px rgba(58, 36, 96, 0.05);
+  height: 100%;
+}
+
+.mcc-worship__info-card h2,
+.mcc-worship__card h3,
+.mcc-worship__quote-card h3 {
+  margin: 0 0 10px;
+  color: #6b3fa0;
+  font-size: clamp(1.02rem, 1.6vw, 1.22rem);
+  line-height: 1.22;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+
+.mcc-worship__info-card p:last-child,
+.mcc-worship__card p:last-child,
+.mcc-worship__quote-card p:last-child,
+.mcc-worship__panel p:last-child {
+  margin-bottom: 0;
+}
+
+.mcc-worship__split,
+.mcc-worship__two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.mcc-worship__heading {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 28px;
+}
+
+.mcc-worship__heading p {
+  margin: 0;
+  color: #6b6b6b;
+}
+
+.mcc-worship__card--accent {
+  background: linear-gradient(135deg, rgba(107, 63, 160, 0.96), rgba(82, 48, 122, 0.95));
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.mcc-worship__card--accent h3,
+.mcc-worship__card--accent a {
+  color: #ffffff;
+}
+
+.mcc-worship__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.mcc-worship__cta h2 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.mcc-worship__cta-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mcc-worship__cta-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.mcc-worship__cta-links a:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .mcc-worship__hero h1 {
+    max-width: none;
+  }
+
+  .mcc-worship__split,
+  .mcc-worship__two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .mcc-worship__cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 760px) {
+  .mcc-worship__hero,
+  .mcc-worship__section,
+  .mcc-worship__cta {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .mcc-worship__hero,
+  .mcc-worship__section {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .mcc-worship__hero-actions,
+  .mcc-worship__cta-links {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mcc-worship__btn,
+  .mcc-worship__cta-links a {
+    width: 100%;
+  }
+}
+/* ── End MCC Worship page styles ─────────────────────────────────────────── */
+
 /* ── MCC Home v2 scoped styles ───────────────────────────────────────────── */
 .mcc-home-v2,
 .mcc-home-v2 * {
