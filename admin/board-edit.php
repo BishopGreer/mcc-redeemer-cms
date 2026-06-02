@@ -206,6 +206,8 @@ adminLayout($pageTitle, function() use ($member, $isNew, $errors, $photo) {
   </div>
 </div>
 
+<link rel="stylesheet" href="<?= siteUrl('public/assets/jodit/jodit.min.css') ?>">
+<script src="<?= siteUrl('public/assets/jodit/jodit.min.js') ?>"></script>
 <script>
 function openMediaPicker()  { document.getElementById('media-modal').style.display = 'block'; }
 function closeMediaPicker() { document.getElementById('media-modal').style.display = 'none'; }
@@ -221,19 +223,16 @@ function selectPhoto(el) {
     '" style="max-width:100%; border-radius:8px; display:block;">';
   closeMediaPicker();
 }
-// Jodit editor for bio
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof Jodit !== 'undefined') {
-    Jodit.make('#bio-editor', {
-      height: 350,
-      buttons: 'bold,italic,underline,|,ul,ol,|,link,|,undo,redo',
-      showXPathInStatusbar: false,
-      showCharsCounter: false,
-      showWordsCounter: false,
-    });
-  }
-});
+// Jodit is already loaded above — the textarea is in the DOM — initialize directly
+if (typeof Jodit !== 'undefined') {
+  Jodit.make('#bio-editor', {
+    height: 380,
+    buttons: 'bold,italic,underline,|,ul,ol,|,link,|,undo,redo',
+    showXPathInStatusbar: false,
+    showCharsCounter: false,
+    showWordsCounter: false,
+  });
+}
 </script>
-<script src="<?= siteUrl('public/assets/jodit/jodit.min.js') ?>"></script>
 <?php
 });
