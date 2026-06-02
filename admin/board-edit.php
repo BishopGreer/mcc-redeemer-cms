@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Board member added.');
             redirect(siteUrl('admin/board/' . $newId . '/edit'));
         } else {
-            Database::update('board_members', $data, ['id' => $id]);
+            Database::update('board_members', $data, 'id = ? AND site_id = ?', [$id, Database::siteId()]);
             PageCache::clearAll();
             flash('success', 'Board member updated.');
             redirect(siteUrl('admin/board/' . $id . '/edit'));
