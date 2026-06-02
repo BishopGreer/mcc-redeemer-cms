@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'posts_per_page', 'date_format', 'timezone',
         'analytics_enabled', 'analytics_exclude_admins',
         'analytics_track_browser', 'analytics_track_os', 'analytics_session_minutes',
-        'parish_address', 'parish_phone', 'parish_city', 'parish_state',
+        'parish_address', 'mailing_address', 'parish_phone', 'parish_city', 'parish_state',
         'hcaptcha_site_key', 'hcaptcha_secret_key',
         'hero_button_text', 'hero_button_url',
         'home_card1_title', 'home_card1_text', 'home_card1_link_text', 'home_card1_link_url',
@@ -291,6 +291,14 @@ adminLayout('Settings', function() use ($settings, $s) {
       <div class="form-group">
         <label class="form-label">Church Address</label>
         <textarea name="parish_address" class="form-control" rows="3"><?= h($s('parish_address')) ?></textarea>
+        <span class="form-hint">Physical / street address shown on the contact page.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mailing Address</label>
+        <input type="text" name="mailing_address" class="form-control"
+               value="<?= h($s('mailing_address')) ?>"
+               placeholder="e.g. P.O. Box 1234, Augusta, GA 30903">
+        <span class="form-hint">PO Box or separate mailing address — shown alongside the physical address on the contact page.</span>
       </div>
       <div class="form-group">
         <label class="form-label">Phone</label>

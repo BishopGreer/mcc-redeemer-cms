@@ -66,8 +66,8 @@ $contactPage = Database::fetch(
     [Database::siteId()]
 );
 
-$hasInfo = setting('parish_address') || setting('parish_phone') || setting('admin_email')
-        || setting('parish_city') || setting('worship_times');
+$hasInfo = setting('parish_address') || setting('mailing_address') || setting('parish_phone')
+        || setting('admin_email') || setting('parish_city') || setting('worship_times');
 
 renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $contactPage, $hasInfo) {
 ?>
@@ -181,6 +181,15 @@ renderPage('Contact Us', function() use ($errors, $success, $values, $intro, $co
                 <?= h(setting('parish_city', 'Augusta')) ?>, <?= h(setting('parish_state', 'GA')) ?>
                 <?php if (setting('parish_zip')): ?> <?= h(setting('parish_zip')) ?><?php endif; ?>
               <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+        <?php if (setting('mailing_address')): ?>
+          <div class="contact-info-item">
+            <span class="contact-info-icon">&#9993;</span>
+            <div>
+              <strong style="font-size:0.8rem; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:.04em;">Mailing Address</strong><br>
+              <?= h(setting('mailing_address')) ?>
             </div>
           </div>
         <?php endif; ?>

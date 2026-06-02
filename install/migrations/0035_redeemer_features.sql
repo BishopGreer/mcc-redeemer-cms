@@ -46,4 +46,5 @@ INSERT IGNORE INTO `settings` (`site_id`, `key`, `value`) VALUES
   (1, 'parish_state',              'GA'),
   (1, 'analytics_track_browser',   '1'),
   (1, 'analytics_track_os',        '1'),
-  (1, 'analytics_session_minutes', '30');
+  (1, 'analytics_session_minutes', '30'),
+  (1, 'mailing_address',           '');
