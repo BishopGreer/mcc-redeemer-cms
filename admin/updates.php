@@ -37,6 +37,19 @@ if ($action === 'remove_orphan' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(siteUrl('admin/updates'));
 }
 
+// ---- Reset all migrations and rerun from scratch ----
+if ($action === 'rerun_all_migrations' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    Auth::verifyCsrf();
+    Auth::requireSuperAdmin();
+    $results = Updater::resetAndRerunAll();
+    $ok = !empty($results) && !in_array(false, array_column($results, 'ok'));
+    if ($ok) {
+        flash('success', count($results) . ' migration(s) reset and reapplied successfully.');
+        redirect(siteUrl('admin/updates'));
+    }
+    // On failure: fall through so the page renders with $results intact
+}
+
 // ---- Run pending migrations only ----
 if ($action === 'migrate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::verifyCsrf();
@@ -301,8 +314,16 @@ adminLayout('Updates &amp; Migrations', function() use (
 
     <!-- Migration history -->
     <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">&#128203; Migration History</h2>
+      <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <h2 class="card-title" style="margin:0;">&#128203; Migration History</h2>
+        <?php if (Auth::isSuperAdmin()): ?>
+        <form method="post" style="margin:0;"
+              onsubmit="return confirm('This will clear ALL migration records and rerun every migration from scratch.\n\nThis is safe — all SQL files use IF NOT EXISTS — but it may take a moment.\n\nContinue?');">
+          <?= csrfField() ?>
+          <input type="hidden" name="action" value="rerun_all_migrations">
+          <button class="btn btn-sm btn-danger">&#9851; Reset &amp; Reapply All Migrations</button>
+        </form>
+        <?php endif; ?>
       </div>
 
       <?php if (!empty($orphaned)): ?>

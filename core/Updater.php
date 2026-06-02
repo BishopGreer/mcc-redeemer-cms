@@ -88,6 +88,15 @@ class Updater {
     }
 
     /**
+     * Clear all applied-migration records then rerun every migration file.
+     * Returns same result format as runPendingMigrations().
+     */
+    public static function resetAndRerunAll(): array {
+        Database::query("DELETE FROM migrations");
+        return self::runPendingMigrations();
+    }
+
+    /**
      * Run all pending migrations in order.
      * Returns an array of results: [version => ['ok'=>bool, 'error'=>string|null]]
      */
