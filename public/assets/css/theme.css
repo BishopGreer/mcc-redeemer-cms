@@ -4090,6 +4090,422 @@ select.form-control {
 
 
 /* ============================================================
+   MCC LEADERSHIP V1
+   ============================================================ */
+
+/* ── Outer wrapper ─────────────────────────────────────────── */
+.mcc-leadership-v1 {
+  font-family: var(--font-body);
+  color: var(--color-text);
+}
+
+/* ── Generic section block ─────────────────────────────────── */
+.mcc-leadership-v1__section {
+  padding: 4rem 20px;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.mcc-leadership-v1__section--soft {
+  background: var(--color-bg-alt);
+  max-width: none;
+  padding-inline: 20px;
+}
+
+.mcc-leadership-v1__section--soft > * {
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.mcc-leadership-v1__section--alt {
+  background: var(--color-primary);
+  max-width: none;
+  padding-inline: 20px;
+}
+
+.mcc-leadership-v1__section--alt > * {
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.mcc-leadership-v1__hero {
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  color: #fff;
+  padding: 5rem 20px 4rem;
+  text-align: center;
+}
+
+.mcc-leadership-v1__hero h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: #fff;
+  max-width: 780px;
+  margin: 0.5rem auto 1.25rem;
+  line-height: 1.2;
+}
+
+.mcc-leadership-v1__kicker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+  margin-bottom: 0.5rem;
+}
+
+.mcc-leadership-v1__lead {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.85);
+  max-width: 680px;
+  margin-inline: auto;
+}
+
+/* ── Section heading block ─────────────────────────────────── */
+.mcc-leadership-v1__heading {
+  max-width: 680px;
+  margin-bottom: 2.5rem;
+}
+
+.mcc-leadership-v1__heading h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+}
+
+.mcc-leadership-v1__heading p {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ── Intro two-column ──────────────────────────────────────── */
+.mcc-leadership-v1__intro {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 3rem;
+  align-items: start;
+}
+
+.mcc-leadership-v1__intro-copy h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.mcc-leadership-v1__intro-copy p {
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  margin-bottom: 0.85rem;
+}
+
+.mcc-leadership-v1__info {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem 1.75rem;
+  border-top: 4px solid var(--color-accent);
+}
+
+.mcc-leadership-v1__info h3 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: 1rem;
+  margin-bottom: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-size: 0.8rem;
+}
+
+.mcc-leadership-v1__info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.mcc-leadership-v1__info li {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.mcc-leadership-v1__info a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.mcc-leadership-v1__info a:hover {
+  text-decoration: underline;
+}
+
+/* ── Staff grid ────────────────────────────────────────────── */
+.mcc-leadership-v1__staff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.mcc-leadership-v1__person-card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.75rem 1.5rem;
+  border-top: 4px solid var(--color-primary);
+}
+
+.mcc-leadership-v1__person-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.mcc-leadership-v1__person-meta {
+  margin-bottom: 1rem;
+}
+
+.mcc-leadership-v1__person-meta h3 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.mcc-leadership-v1__role {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.3rem;
+}
+
+.mcc-leadership-v1__person-card p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  margin-bottom: 0.65rem;
+}
+
+.mcc-leadership-v1__person-card p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Board list ────────────────────────────────────────────── */
+.mcc-leadership-v1__board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(107,63,160,0.12);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.mcc-leadership-v1__board-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid rgba(107,63,160,0.1);
+}
+
+.mcc-leadership-v1__board-item:last-child {
+  border-bottom: none;
+}
+
+.mcc-leadership-v1__board-item:nth-child(even) {
+  background: rgba(253,250,245,0.6);
+}
+
+.mcc-leadership-v1__board-role {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  padding-top: 0.2rem;
+  line-height: 1.4;
+}
+
+.mcc-leadership-v1__board-content h3 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+
+.mcc-leadership-v1__board-content p {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── Two-column panel ──────────────────────────────────────── */
+.mcc-leadership-v1__two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.mcc-leadership-v1__panel h2 {
+  font-family: var(--font-heading);
+  color: #fff;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  margin-bottom: 0.85rem;
+}
+
+.mcc-leadership-v1__panel p {
+  color: rgba(255,255,255,0.82);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+.mcc-leadership-v1__panel p:last-child {
+  margin-bottom: 0;
+}
+
+.mcc-leadership-v1__eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+  margin-bottom: 0.4rem;
+}
+
+/* ── CTA card ──────────────────────────────────────────────── */
+.mcc-leadership-v1__cta-card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.mcc-leadership-v1__cta-card .mcc-leadership-v1__eyebrow {
+  color: var(--color-accent);
+}
+
+.mcc-leadership-v1__cta-card h2 {
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  margin-bottom: 0.5rem;
+}
+
+.mcc-leadership-v1__cta-card p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 580px;
+  margin: 0;
+}
+
+.mcc-leadership-v1__cta-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.mcc-leadership-v1__btn {
+  display: inline-block;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.mcc-leadership-v1__btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.mcc-leadership-v1__btn--primary:hover {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+.mcc-leadership-v1__btn--secondary {
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.mcc-leadership-v1__btn--secondary:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .mcc-leadership-v1__intro {
+    grid-template-columns: 1fr;
+  }
+
+  .mcc-leadership-v1__staff-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mcc-leadership-v1__two-col {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .mcc-leadership-v1__hero {
+    padding: 3.5rem 20px 2.5rem;
+  }
+
+  .mcc-leadership-v1__section {
+    padding: 2.5rem 16px;
+  }
+
+  .mcc-leadership-v1__staff-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mcc-leadership-v1__board-item {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
+  }
+
+  .mcc-leadership-v1__cta-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.75rem 1.25rem;
+  }
+
+  .mcc-leadership-v1__cta-actions {
+    width: 100%;
+  }
+
+  .mcc-leadership-v1__btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* ============================================================
    24. FOCUS & ACCESSIBILITY
    ============================================================ */
 
