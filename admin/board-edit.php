@@ -127,7 +127,7 @@ adminLayout($pageTitle, function() use ($member, $isNew, $errors, $photo) {
         <div class="card-body" style="padding:16px;">
           <div id="photo-preview" style="margin-bottom:12px;">
             <?php if ($photo): ?>
-            <img src="<?= siteUrl($photo['path']) ?>" alt="<?= h($photo['alt_text'] ?: $member['name']) ?>"
+            <img src="<?= h(UPLOAD_URL . '/' . $photo['path']) ?>" alt="<?= h($photo['alt_text'] ?: $member['name']) ?>"
                  style="max-width:100%; border-radius:8px; display:block;">
             <?php else: ?>
             <div style="background:#f3f4f6; border:2px dashed #d1d5db; border-radius:8px;
@@ -190,13 +190,15 @@ adminLayout($pageTitle, function() use ($member, $isNew, $errors, $photo) {
           [Database::siteId()]
       );
       foreach ($mediaItems as $mi):
+          $miUrl   = UPLOAD_URL . '/' . $mi['path'];
+          $miThumb = UPLOAD_URL . '/' . ($mi['thumb_path'] ?: $mi['path']);
       ?>
       <div class="media-item" data-id="<?= $mi['id'] ?>"
-           data-url="<?= h(siteUrl($mi['path'])) ?>"
+           data-url="<?= h($miUrl) ?>"
            data-alt="<?= h($mi['alt_text'] ?: $mi['original_name']) ?>"
            onclick="selectPhoto(this)"
            style="cursor:pointer; border:2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:1;">
-        <img src="<?= h(siteUrl($mi['thumb_path'] ?: $mi['path'])) ?>"
+        <img src="<?= h($miThumb) ?>"
              alt="<?= h($mi['alt_text'] ?: $mi['original_name']) ?>"
              style="width:100%; height:100%; object-fit:cover;">
       </div>

@@ -3,6 +3,7 @@ require_once dirname(__DIR__) . '/config/config.php';
 require_once BASE_PATH . '/core/Database.php';
 require_once BASE_PATH . '/core/Auth.php';
 require_once BASE_PATH . '/core/Updater.php';
+require_once BASE_PATH . '/core/PageCache.php';
 require_once BASE_PATH . '/core/helpers.php';
 require_once __DIR__ . '/layout.php';
 
@@ -48,6 +49,15 @@ if ($action === 'rerun_all_migrations' && $_SERVER['REQUEST_METHOD'] === 'POST')
         redirect(siteUrl('admin/updates'));
     }
     // On failure: fall through so the page renders with $results intact
+}
+
+// ---- Clear page cache ----
+if ($action === 'clear_cache' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    Auth::verifyCsrf();
+    PageCache::init();
+    PageCache::clearAll();
+    flash('success', 'Page cache cleared. The public site will rebuild pages fresh on next visit.');
+    redirect(siteUrl('admin/updates'));
 }
 
 // ---- Run pending migrations only ----
@@ -285,6 +295,31 @@ adminLayout('Updates &amp; Migrations', function() use (
 
   <!-- Right column -->
   <div>
+
+    <!-- Clear page cache -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">&#128465; Clear Page Cache</h2>
+      </div>
+      <?php
+        $cacheDir   = BASE_PATH . '/cache/pages';
+        $cacheFiles = is_dir($cacheDir) ? count(glob($cacheDir . '/*.html') ?: []) : 0;
+      ?>
+      <p style="color:var(--slate-lt); font-family:sans-serif; font-size:13.5px; margin-bottom:12px;">
+        The site caches public pages as HTML files for speed. If you've made content changes
+        that aren't showing on the public site, clear the cache to force a fresh rebuild.
+      </p>
+      <p style="font-size:13px; margin-bottom:14px;">
+        <strong><?= $cacheFiles ?></strong> cached page<?= $cacheFiles !== 1 ? 's' : '' ?> on disk.
+      </p>
+      <form method="post">
+        <?= csrfField() ?>
+        <input type="hidden" name="action" value="clear_cache">
+        <button type="submit" class="btn btn-secondary" style="width:100%;">
+          &#128465; Clear All Cached Pages
+        </button>
+      </form>
+    </div>
 
     <!-- ZIP upload -->
     <div class="card">
