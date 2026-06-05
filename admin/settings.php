@@ -129,6 +129,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'newsletter_signup_enabled', 'newsletter_signup_label',
         'paypal_link', 'venmo_link', 'donate_page_title', 'donate_description',
         'footer_bottom_text',
+        'footer_col1_heading', 'footer_col1_content',
+        'footer_col2_heading', 'footer_col2_content',
+        'footer_col3_heading', 'footer_col3_content',
     ];
 
     foreach ($fields as $key) {
@@ -679,20 +682,50 @@ adminLayout('Settings', function() use ($settings, $s) {
   <div class="card" style="margin-bottom:20px;">
     <div class="card-header"><h2 class="card-title">Footer</h2></div>
     <div class="card-body" style="padding:20px;">
-      <p style="font-size:13px; color:#888; margin-bottom:16px;">
-        The footer automatically shows your site name, navigation links, and church contact info
-        from the fields above. Use the field below to customize the bottom copyright bar.
+
+      <p style="font-size:13px; color:#888; margin-bottom:20px;">
+        The footer has three columns. Each has an editable heading and content area.
+        Leave a content area blank to use the automatic default (site tagline, nav links, or church address).
+        Shortcodes like <code>[events limit="3"]</code> work in content fields.
       </p>
-      <div class="form-group">
-        <label class="form-label">Footer Bottom Bar Text</label>
-        <input type="text" name="footer_bottom_text" class="form-control"
-               value="<?= h($s('footer_bottom_text', '')) ?>"
-               placeholder="e.g. Metropolitan Community Church of Our Redeemer, Augusta, GA">
-        <span class="form-hint">
-          Shown in the bottom bar after the copyright year and site name.
-          Leave blank to hide this extra line.
-        </span>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:24px;">
+
+        <?php foreach ([
+          ['num'=>1, 'label'=>'Column 1', 'ph_head'=>'e.g. MCC Our Redeemer', 'ph_body'=>'Leave blank to show the site tagline automatically.'],
+          ['num'=>2, 'label'=>'Column 2', 'ph_head'=>'e.g. Pages',            'ph_body'=>'Leave blank to show nav links automatically.'],
+          ['num'=>3, 'label'=>'Column 3', 'ph_head'=>'e.g. Contact Us',       'ph_body'=>'Leave blank to show the church address automatically.'],
+        ] as $fc): $n = $fc['num']; ?>
+        <div>
+          <div style="font-weight:600; font-size:13px; margin-bottom:10px; color:var(--brown);"><?= $fc['label'] ?></div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:12px;">Heading</label>
+            <input type="text" name="footer_col<?= $n ?>_heading" class="form-control"
+                   value="<?= h($s("footer_col{$n}_heading",'')) ?>"
+                   placeholder="<?= h($fc['ph_head']) ?>">
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="font-size:12px;">Content</label>
+            <textarea name="footer_col<?= $n ?>_content" class="form-control"
+                      rows="6" placeholder="<?= h($fc['ph_body']) ?>"><?= h($s("footer_col{$n}_content",'')) ?></textarea>
+          </div>
+        </div>
+        <?php endforeach; ?>
+
       </div>
+
+      <div style="border-top:1px solid var(--sand); padding-top:16px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Bottom Bar Text</label>
+          <input type="text" name="footer_bottom_text" class="form-control"
+                 value="<?= h($s('footer_bottom_text', '')) ?>"
+                 placeholder="e.g. Metropolitan Community Church of Our Redeemer, Augusta, GA">
+          <span class="form-hint">
+            Shown after the copyright year and site name. Leave blank to omit.
+          </span>
+        </div>
+      </div>
+
     </div>
   </div>
 

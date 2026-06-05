@@ -413,41 +413,52 @@ document.addEventListener('click', function(e) {
 <!-- Footer -->
 <footer class="site-footer">
   <div class="footer-inner">
+
+    <?php
+    // ── Footer column helper ─────────────────────────────────────────────────
+    // Each column reads from settings; falls back to auto-generated content.
+    // Content fields run through processShortcodes() so [events] etc. work.
+
+    // Col 2 auto default: nav links
+    ob_start();
+    foreach ($topNavPages as $np)
+        echo '<a href="' . siteUrl($np['slug']) . '">' . h($np['nav_label'] ?: $np['title']) . '</a>';
+    if ($blogEnabled)    echo '<a href="' . siteUrl('blog')    . '">' . h(setting('blog_nav_label','Blog')) . '</a>';
+    if ($contactEnabled) echo '<a href="' . siteUrl('contact') . '">Contact</a>';
+    $col2Default = ob_get_clean();
+
+    // Col 3 auto default: church contact info
+    ob_start();
+    echo '<address>' . h($siteName) . '<br>';
+    if (setting('parish_address'))
+        echo nl2br(h(setting('parish_address',''))) . '<br>';
+    if (setting('parish_city') || setting('parish_state'))
+        echo h(setting('parish_city','Augusta')) . ', ' . h(setting('parish_state','GA')) . '<br>';
+    if (setting('parish_phone'))
+        echo '<a href="tel:' . h(setting('parish_phone')) . '">' . h(setting('parish_phone')) . '</a><br>';
+    if (setting('admin_email'))
+        echo '<a href="mailto:' . h(setting('admin_email')) . '">' . h(setting('admin_email')) . '</a>';
+    echo '</address>';
+    $col3Default = ob_get_clean();
+
+    $footerCols = [
+        ['heading' => setting('footer_col1_heading', $siteName),   'content' => setting('footer_col1_content',''), 'default' => '<p>' . h($siteTag) . '</p>'],
+        ['heading' => setting('footer_col2_heading', 'Pages'),      'content' => setting('footer_col2_content',''), 'default' => $col2Default],
+        ['heading' => setting('footer_col3_heading', 'Contact Us'), 'content' => setting('footer_col3_content',''), 'default' => $col3Default],
+    ];
+    ?>
+
+    <?php foreach ($footerCols as $col): ?>
     <div class="footer-col">
-      <h3><?= h($siteName) ?></h3>
-      <p><?= h($siteTag) ?></p>
-    </div>
-    <div class="footer-col">
-      <h3>Pages</h3>
-      <?php foreach ($topNavPages as $np): ?>
-        <a href="<?= siteUrl($np['slug']) ?>"><?= h($np['nav_label'] ?: $np['title']) ?></a>
-      <?php endforeach; ?>
-      <?php if ($blogEnabled): ?>
-      <a href="<?= siteUrl('blog') ?>"><?= h(setting('blog_nav_label', 'Blog')) ?></a>
+      <?php if ($col['heading']): ?><h3><?= h($col['heading']) ?></h3><?php endif; ?>
+      <?php if (trim($col['content']) !== ''): ?>
+        <?= processShortcodes($col['content']) ?>
+      <?php else: ?>
+        <?= $col['default'] ?>
       <?php endif; ?>
-      <?php if ($contactEnabled): ?>
-      <a href="<?= siteUrl('contact') ?>">Contact</a>
-      <?php endif; ?>
-      <a href="<?= siteUrl('board') ?>">Leadership</a>
     </div>
-    <div class="footer-col">
-      <h3>Contact Us</h3>
-      <address>
-        <?= h($siteName) ?><br>
-        <?php if (setting('parish_address')): ?>
-        <?= nl2br(h(setting('parish_address', ''))) ?><br>
-        <?php endif; ?>
-        <?php if (setting('parish_city') || setting('parish_state')): ?>
-        <?= h(setting('parish_city', 'Augusta')) ?>, <?= h(setting('parish_state', 'GA')) ?><br>
-        <?php endif; ?>
-        <?php if (setting('parish_phone')): ?>
-          <a href="tel:<?= h(setting('parish_phone')) ?>"><?= h(setting('parish_phone')) ?></a><br>
-        <?php endif; ?>
-        <?php if (setting('admin_email')): ?>
-          <a href="mailto:<?= h(setting('admin_email')) ?>"><?= h(setting('admin_email')) ?></a>
-        <?php endif; ?>
-      </address>
-    </div>
+    <?php endforeach; ?>
+
   </div>
   <div class="footer-bottom">
     &copy; <?= date('Y') ?> <?= h($siteName) ?>

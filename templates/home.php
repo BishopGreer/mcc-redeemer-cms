@@ -32,13 +32,7 @@ for ($i = 1; $i <= 3; $i++) {
     }
 }
 
-// Donation links
-$paypalLink = setting('paypal_link', '');
-$venmoLink  = setting('venmo_link',  '');
-$donateTitle = setting('donate_page_title',   'Support Our Church');
-$donateDesc  = setting('donate_description',  'Your generosity helps us continue our ministry.');
-
-renderPage(setting('site_name', 'MCC Our Redeemer'), function() use ($homePage, $recentPosts, $cards, $paypalLink, $venmoLink, $donateTitle, $donateDesc, $blogEnabled) {
+renderPage(setting('site_name', 'MCC Our Redeemer'), function() use ($homePage, $recentPosts, $cards, $blogEnabled) {
 ?>
 
 <!-- Hero section -->
@@ -84,31 +78,6 @@ renderPage(setting('site_name', 'MCC Our Redeemer'), function() use ($homePage, 
 </section>
 <?php endif; ?>
 
-<!-- Donation section -->
-<?php if ($paypalLink || $venmoLink): ?>
-<section class="donate-section" aria-label="Donate">
-  <div class="donate-inner">
-    <h2 class="donate-title"><?= h($donateTitle) ?></h2>
-    <p class="donate-desc"><?= h($donateDesc) ?></p>
-    <div class="donate-buttons">
-      <?php if ($paypalLink): ?>
-      <a href="<?= h($paypalLink) ?>" class="donate-btn donate-btn-paypal"
-         target="_blank" rel="noopener noreferrer">
-        <span class="donate-btn-icon">&#128179;</span>
-        Give via PayPal
-      </a>
-      <?php endif; ?>
-      <?php if ($venmoLink): ?>
-      <a href="<?= h($venmoLink) ?>" class="donate-btn donate-btn-venmo"
-         target="_blank" rel="noopener noreferrer">
-        <span class="donate-btn-icon">&#128172;</span>
-        Give via Venmo
-      </a>
-      <?php endif; ?>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
 
 <!-- Recent Blog Posts (only when blog is enabled) -->
 <?php if ($blogEnabled && !empty($recentPosts)): ?>
