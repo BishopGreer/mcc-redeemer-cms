@@ -342,7 +342,17 @@ adminLayout('Updates & Migrations', function() use (
             <?= h($githubResult['notes']) ?>
           </div>
         <?php endif; ?>
-        <a href="<?= h($githubResult['url']) ?>" target="_blank" class="btn btn-primary" style="width:100%; justify-content:center;">
+        <?php if ($gitStatus['available'] && Updater::isGitRepo()): ?>
+          <form method="post" style="margin-bottom:8px;"
+                onsubmit="return confirm('Pull <?= h($githubResult['tag']) ?> from GitHub and run any new migrations?');">
+            <?= csrfField() ?>
+            <input type="hidden" name="action" value="git_connect_pull">
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+              &#11015; Pull <?= h($githubResult['tag']) ?> Now
+            </button>
+          </form>
+        <?php endif; ?>
+        <a href="<?= h($githubResult['url']) ?>" target="_blank" class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;">
           View Release on GitHub &rarr;
         </a>
       <?php else: ?>
