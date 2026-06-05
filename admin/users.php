@@ -75,7 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect(siteUrl("admin/users?id={$uid}"));
         }
 
-        $data = ['name' => $name, 'email' => $email, 'permissions' => $permJson];
+        $customRoleId = ($_POST['custom_role_id'] ?? '') !== '' ? (int)$_POST['custom_role_id'] : null;
+        $data = ['name' => $name, 'email' => $email, 'permissions' => $permJson, 'custom_role_id' => $customRoleId];
         if ($uid !== $currentUserId) {
             $data['role'] = $role;
             // Site assignment (super_admin only, cannot change own site)
@@ -125,13 +126,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        $newCustomRoleId = ($_POST['custom_role_id'] ?? '') !== '' ? (int)$_POST['custom_role_id'] : null;
         Database::insert('users', [
-            'name'        => $name,
-            'email'       => $email,
-            'password'    => Auth::hashPassword($_POST['password']),
-            'role'        => $role,
-            'permissions' => $permJson,
-            'site_id'     => $newSiteId,
+            'name'           => $name,
+            'email'          => $email,
+            'password'       => Auth::hashPassword($_POST['password']),
+            'role'           => $role,
+            'permissions'    => $permJson,
+            'custom_role_id' => $newCustomRoleId,
+            'site_id'        => $newSiteId,
         ]);
         flash('success', 'User created.');
         redirect(siteUrl('admin/users'));
@@ -151,11 +154,20 @@ $users    = Database::fetchAll(
 
 // Group permissions by category for the form
 $permGroups = [
-    'Administration' => ['manage_users', 'manage_settings', 'manage_records_settings'],
-    'Content'        => ['manage_content', 'manage_media', 'view_analytics'],
-    'Forms & Inbox'  => ['manage_contacts', 'manage_prayers'],
-    'Parish Register'=> ['view_records', 'edit_records', 'print_certificates'],
+    'Administration'   => ['manage_users', 'manage_roles', 'manage_settings'],
+    'Content'          => ['manage_content', 'manage_media', 'view_analytics'],
+    'Events'           => ['manage_events'],
+    'Forms & Contacts' => ['manage_contacts'],
 ];
+
+// Custom roles for dropdown
+$customRoles = [];
+try {
+    $customRoles = Database::fetchAll(
+        "SELECT id, name FROM custom_roles WHERE site_id = ? ORDER BY name",
+        [Database::siteId()]
+    );
+} catch (\Throwable) {}
 
 $roleLabels = [
     'admin'       => ['label' => 'Admin',       'color' => '#7c3aed'],
@@ -164,7 +176,7 @@ $roleLabels = [
     'parishioner' => ['label' => 'Parishioner', 'color' => '#92400e'],
 ];
 
-adminLayout('User Management', function() use ($users, $editUser, $showForm, $action, $currentUserId, $permGroups, $roleLabels, $isSuperAdmin, $allSites) {
+adminLayout('User Management', function() use ($users, $editUser, $showForm, $action, $currentUserId, $permGroups, $roleLabels, $isSuperAdmin, $allSites, $customRoles) {
 ?>
 
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -222,11 +234,30 @@ $isSelf = ($fuId === $currentUserId);
           <?php endif; ?>
           <div class="form-hint">
             <strong>Admin</strong> — full access &nbsp;|&nbsp;
-            <strong>Editor</strong> — content + register &nbsp;|&nbsp;
+            <strong>Editor</strong> — content editing &nbsp;|&nbsp;
             <strong>Author</strong> — posts &amp; pages &nbsp;|&nbsp;
             <strong>Parishioner</strong> — no admin access by default
           </div>
         </div>
+
+        <?php if (!empty($customRoles)): ?>
+        <div class="form-group">
+          <label>Custom Role <span style="font-weight:normal; color:#aaa;">(optional — overrides permissions below)</span></label>
+          <?php $fuCustomRole = (int)($fu['custom_role_id'] ?? 0); ?>
+          <select name="custom_role_id" class="form-control">
+            <option value="">— None (use base role + overrides) —</option>
+            <?php foreach ($customRoles as $cr): ?>
+            <option value="<?= $cr['id'] ?>" <?= $fuCustomRole === (int)$cr['id'] ? 'selected' : '' ?>>
+              <?= h($cr['name']) ?>
+            </option>
+            <?php endforeach; ?>
+          </select>
+          <div class="form-hint">
+            Custom roles define an exact permission set. When assigned, the permission checkboxes below are ignored.
+            <a href="<?= siteUrl('admin/roles') ?>">Manage roles &rarr;</a>
+          </div>
+        </div>
+        <?php endif; ?>
 
         <?php if ($isSuperAdmin && !$isSelf): ?>
         <div class="form-group">

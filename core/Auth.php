@@ -4,17 +4,14 @@ class Auth {
 
     // Granular permission definitions: key => [label, minimum role for default grant]
     const PERMISSIONS = [
-        'manage_users'            => ['label' => 'Manage Users & Roles',            'default_role' => 'admin'],
-        'manage_settings'         => ['label' => 'Manage Site Settings',            'default_role' => 'admin'],
-        'manage_content'          => ['label' => 'Manage Pages & Blog Posts',       'default_role' => 'editor'],
-        'manage_media'            => ['label' => 'Manage Media Library',            'default_role' => 'editor'],
-        'view_analytics'          => ['label' => 'View Analytics',                  'default_role' => 'editor'],
-        'manage_contacts'         => ['label' => 'Manage Contact Form Submissions', 'default_role' => 'editor'],
-        'manage_prayers'          => ['label' => 'Manage Prayer Requests',          'default_role' => 'editor'],
-        'view_records'            => ['label' => 'View Parish Register',            'default_role' => 'editor'],
-        'edit_records'            => ['label' => 'Add & Edit Parish Register Records','default_role' => 'editor'],
-        'print_certificates'      => ['label' => 'Print Sacramental Certificates',  'default_role' => 'editor'],
-        'manage_records_settings' => ['label' => 'Parish Register Settings',        'default_role' => 'admin'],
+        'manage_users'    => ['label' => 'Manage Users',              'default_role' => 'admin'],
+        'manage_roles'    => ['label' => 'Manage Custom Roles',       'default_role' => 'admin'],
+        'manage_settings' => ['label' => 'Manage Site Settings',      'default_role' => 'admin'],
+        'manage_content'  => ['label' => 'Manage Pages & Blog Posts', 'default_role' => 'editor'],
+        'manage_media'    => ['label' => 'Manage Media Library',      'default_role' => 'editor'],
+        'view_analytics'  => ['label' => 'View Analytics',            'default_role' => 'editor'],
+        'manage_contacts' => ['label' => 'Manage Contact Forms',      'default_role' => 'editor'],
+        'manage_events'   => ['label' => 'Manage Events Calendar',    'default_role' => 'editor'],
     ];
 
     const ROLE_HIERARCHY = ['parishioner' => 0, 'author' => 1, 'editor' => 2, 'admin' => 3, 'super_admin' => 4];
@@ -104,6 +101,21 @@ class Auth {
     public static function user(): ?array {
         if (self::$user === null && self::check()) {
             self::$user = Database::fetch("SELECT * FROM users WHERE id = ?", [$_SESSION['user_id']]);
+            // Load custom role permissions if assigned
+            if (self::$user && !empty(self::$user['custom_role_id'])) {
+                try {
+                    $rows = Database::fetchAll(
+                        "SELECT permission FROM custom_role_permissions WHERE role_id = ?",
+                        [self::$user['custom_role_id']]
+                    );
+                    self::$user['_custom_perms'] = array_column($rows, 'permission');
+                    $cr = Database::fetch("SELECT base_role FROM custom_roles WHERE id = ?", [self::$user['custom_role_id']]);
+                    self::$user['_custom_base_role'] = $cr['base_role'] ?? 'editor';
+                } catch (\Throwable) {
+                    self::$user['_custom_perms']     = [];
+                    self::$user['_custom_base_role']  = null;
+                }
+            }
         }
         return self::$user;
     }
@@ -112,8 +124,13 @@ class Auth {
         return self::user()['role'] ?? '';
     }
 
+    /** Hierarchy check — uses custom role's base_role when set. */
     public static function can(string $role): bool {
-        return (self::ROLE_HIERARCHY[self::role()] ?? 0) >= (self::ROLE_HIERARCHY[$role] ?? 99);
+        $user = self::user();
+        if (!$user) return false;
+        if (($user['role'] ?? '') === 'super_admin') return true;
+        $effective = $user['_custom_base_role'] ?? $user['role'] ?? '';
+        return (self::ROLE_HIERARCHY[$effective] ?? 0) >= (self::ROLE_HIERARCHY[$role] ?? 99);
     }
 
     public static function requireLogin(string $redirect = '/admin/login'): void {
@@ -160,11 +177,18 @@ class Auth {
         if (!$user) return false;
         if (self::isSuperAdmin()) return true;
 
+        // Custom role: use its explicit permission list
+        if (!empty($user['_custom_perms'])) {
+            return in_array($perm, $user['_custom_perms'], true);
+        }
+
+        // Per-user JSON overrides
         $overrides = !empty($user['permissions']) ? json_decode($user['permissions'], true) : [];
         if (isset($overrides[$perm])) {
             return (bool) $overrides[$perm];
         }
 
+        // Role hierarchy default
         $minRole  = self::PERMISSIONS[$perm]['default_role'] ?? 'admin';
         $minLevel = self::ROLE_HIERARCHY[$minRole] ?? 99;
         return (self::ROLE_HIERARCHY[$user['role']] ?? 0) >= $minLevel;

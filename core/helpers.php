@@ -184,6 +184,23 @@ function processShortcodes(string $content, array $context = []): string
         );
     }
 
+    // [events] / [events limit="5" days="180"]
+    if (str_contains($content, '[events')) {
+        $content = preg_replace_callback(
+            '/\[events([^\]]*)\]/',
+            function (array $m) {
+                $attrs = [];
+                preg_match_all('/(\w+)=["\']([^"\']*)["\']/', $m[1], $pairs, PREG_SET_ORDER);
+                foreach ($pairs as $p) $attrs[$p[1]] = $p[2];
+                return renderEventsShortcode(
+                    (int)($attrs['limit'] ?? 5),
+                    (int)($attrs['days']  ?? 90)
+                );
+            },
+            $content
+        );
+    }
+
     return $content;
 }
 
@@ -195,6 +212,40 @@ function processShortcodes(string $content, array $context = []): string
  * @param string $category Category slug to filter by (empty = all)
  * @param int    $columns  Grid columns for excerpts style (1–4)
  */
+/**
+ * [events limit="5" days="90"]
+ * Render a compact upcoming-events list for embedding in page content.
+ */
+function renderEventsShortcode(int $limit = 5, int $days = 90): string
+{
+    if (!class_exists('Events')) {
+        @require_once BASE_PATH . '/core/Events.php';
+    }
+    $upcoming = Events::upcoming(Database::siteId(), $limit, $days);
+    if (empty($upcoming)) {
+        return '<p class="events-shortcode-empty">No upcoming events scheduled.</p>';
+    }
+    $html = '<div class="events-shortcode">';
+    foreach ($upcoming as $e) {
+        $s     = new DateTimeImmutable($e['occ_start']);
+        $recur = Events::recurrenceLabel($e);
+        $html .= '<a href="' . siteUrl('events/' . $e['slug']) . '" class="events-sc-item">';
+        $html .= '<div class="events-sc-date"><span class="events-sc-day">' . $s->format('j') . '</span>'
+               . '<span class="events-sc-mon">' . $s->format('M') . '</span></div>';
+        $html .= '<div class="events-sc-info"><strong class="events-sc-title">' . h($e['title']) . '</strong>';
+        if (!$e['all_day']) {
+            $html .= '<span class="events-sc-time">' . $s->format('g:i a');
+            if ($recur) $html .= ' &middot; ' . h($recur);
+            $html .= '</span>';
+        }
+        if ($e['location']) $html .= '<span class="events-sc-loc">&#128205; ' . h($e['location']) . '</span>';
+        $html .= '</div></a>';
+    }
+    $html .= '<a href="' . siteUrl('events') . '" class="events-sc-more">View all events &rarr;</a>';
+    $html .= '</div>';
+    return $html;
+}
+
 function renderBlogPostsShortcode(
     string $style    = 'excerpts',
     int    $count    = 5,

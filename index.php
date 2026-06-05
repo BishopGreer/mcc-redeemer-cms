@@ -133,6 +133,10 @@ if (str_starts_with($uri, '/admin')) {
         $section === 'board' && ($subact === 'edit' || $adminPath === 'board/new')
                                       => require BASE_PATH . '/admin/board-edit.php',
         $section === 'board'          => require BASE_PATH . '/admin/board.php',
+        $section === 'events' && ($subact === 'edit' || $adminPath === 'events/new')
+                                      => (function() { require_once BASE_PATH . '/core/Events.php'; require BASE_PATH . '/admin/event-edit.php'; })(),
+        $section === 'events'         => (function() { require_once BASE_PATH . '/core/Events.php'; require BASE_PATH . '/admin/events.php'; })(),
+        $section === 'roles'          => require BASE_PATH . '/admin/roles.php',
         default => (function() { http_response_code(404); echo '<h1>Admin page not found.</h1>'; })(),
     };
     exit;
@@ -320,6 +324,19 @@ if ($uri === '/forms') {
 if (preg_match('#^/forms/([a-z0-9-]+)$#', $uri, $fm)) {
     $formSlug = $fm[1];
     require BASE_PATH . '/templates/form-view.php';
+    exit;
+}
+
+// Events calendar
+if ($uri === '/events') {
+    require_once BASE_PATH . '/core/Events.php';
+    require BASE_PATH . '/templates/events.php';
+    exit;
+}
+if (preg_match('#^/events/([a-z0-9-]+)$#', $uri, $em)) {
+    require_once BASE_PATH . '/core/Events.php';
+    $eventSlug = $em[1];
+    require BASE_PATH . '/templates/event.php';
     exit;
 }
 
