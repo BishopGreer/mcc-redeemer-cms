@@ -60,7 +60,7 @@ renderPage(setting('site_name', 'MCC Our Redeemer'), function() use ($homePage, 
 <?php if ($homePage && $homePage['content']): ?>
 <div class="page-wrap" style="padding-top:40px; padding-bottom:0;">
   <div class="page-content entry-content">
-    <?= $homePage['content'] ?>
+    <?= processShortcodes($homePage['content'], ['page_id' => $homePage['id']]) ?>
   </div>
 </div>
 <?php endif; ?>

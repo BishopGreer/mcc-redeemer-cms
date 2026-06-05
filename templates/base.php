@@ -467,10 +467,12 @@ document.addEventListener('click', function(e) {
     </div>
   </div>
   <div class="footer-bottom">
-    &copy; <?= date('Y') ?> <?= h($siteName) ?> &mdash;
-    Metropolitan Community Church of Our Redeemer, Augusta, GA &mdash;
-    <a href="<?= siteUrl('privacy-policy') ?>">Privacy Policy</a> &mdash;
-    <a href="<?= siteUrl('admin/') ?>">Admin</a>
+    &copy; <?= date('Y') ?> <?= h($siteName) ?>
+    <?php $footerExtra = setting('footer_bottom_text', ''); if ($footerExtra): ?>
+      &mdash; <?= h($footerExtra) ?>
+    <?php endif; ?>
+    &mdash; <a href="<?= siteUrl('privacy-policy') ?>">Privacy Policy</a>
+    &mdash; <a href="<?= siteUrl('admin/') ?>">Admin</a>
   </div>
 </footer>
 

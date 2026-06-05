@@ -128,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'constant_contact_api_key', 'constant_contact_list_id',
         'newsletter_signup_enabled', 'newsletter_signup_label',
         'paypal_link', 'venmo_link', 'donate_page_title', 'donate_description',
+        'footer_bottom_text',
     ];
 
     foreach ($fields as $key) {
@@ -668,6 +669,29 @@ adminLayout('Settings', function() use ($settings, $s) {
             </option>
           <?php endforeach; ?>
         </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- 14. FOOTER                                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><h2 class="card-title">Footer</h2></div>
+    <div class="card-body" style="padding:20px;">
+      <p style="font-size:13px; color:#888; margin-bottom:16px;">
+        The footer automatically shows your site name, navigation links, and church contact info
+        from the fields above. Use the field below to customize the bottom copyright bar.
+      </p>
+      <div class="form-group">
+        <label class="form-label">Footer Bottom Bar Text</label>
+        <input type="text" name="footer_bottom_text" class="form-control"
+               value="<?= h($s('footer_bottom_text', '')) ?>"
+               placeholder="e.g. Metropolitan Community Church of Our Redeemer, Augusta, GA">
+        <span class="form-hint">
+          Shown in the bottom bar after the copyright year and site name.
+          Leave blank to hide this extra line.
+        </span>
       </div>
     </div>
   </div>
