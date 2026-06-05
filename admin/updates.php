@@ -257,12 +257,16 @@ adminLayout('Updates &amp; Migrations', function() use (
 
     <!-- GitHub release check -->
     <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">&#127760; Check for New Releases</h2>
+      <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <h2 class="card-title" style="margin:0;">&#127760; Check for New Releases</h2>
+        <a href="https://github.com/<?= Updater::GITHUB_REPO ?>" target="_blank"
+           style="font-size:12px; color:var(--slate-lt); text-decoration:none; display:flex; align-items:center; gap:4px;">
+          &#128279; BishopGreer/mcc-redeemer-cms
+        </a>
       </div>
       <?php if ($githubResult === null): ?>
         <p style="color:var(--slate-lt); font-family:sans-serif; font-size:13.5px; margin-bottom:12px;">
-          Check GitHub for a newer version of OurSaintFrancis CMS.
+          Check GitHub for a newer version of MCCOOR CMS.
         </p>
         <a href="?check_github=1" class="btn btn-secondary" style="width:100%; justify-content:center;">
           Check GitHub Now
@@ -287,7 +291,11 @@ adminLayout('Updates &amp; Migrations', function() use (
         <div class="alert alert-success">
           &#10003; You are running the latest release (<?= h($githubResult['latest']) ?>).
         </div>
-        <a href="?check_github=1" class="btn btn-secondary btn-sm">Re-check</a>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <a href="?check_github=1" class="btn btn-secondary btn-sm">Re-check</a>
+          <a href="https://github.com/<?= Updater::GITHUB_REPO ?>/releases" target="_blank"
+             class="btn btn-secondary btn-sm">All Releases &#8599;</a>
+        </div>
       <?php endif; ?>
     </div>
 

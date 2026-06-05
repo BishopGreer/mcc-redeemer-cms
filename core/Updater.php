@@ -1,6 +1,6 @@
 <?php
 /**
- * OurSaintFrancis CMS — Update Manager
+ * MCCOOR CMS — Update Manager
  *
  * Handles:
  *  - Reading the current installed version (from install.lock)
@@ -13,7 +13,7 @@ class Updater {
 
     const LOCK_FILE       = BASE_PATH . '/config/install.lock';
     const MIGRATIONS_DIR  = BASE_PATH . '/install/migrations';
-    const GITHUB_REPO     = 'yourorg/parish-cms'; // change when repo is created
+    const GITHUB_REPO     = 'BishopGreer/mcc-redeemer-cms';
     const GITHUB_API      = 'https://api.github.com/repos/' . self::GITHUB_REPO . '/releases/latest';
 
     // -------------------------------------------------------
@@ -304,7 +304,7 @@ class Updater {
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT        => 8,
-            CURLOPT_USERAGENT      => 'OurSaintFrancis-CMS/' . self::installedVersion(),
+            CURLOPT_USERAGENT      => 'MCCOOR-CMS/' . self::installedVersion(),
             CURLOPT_HTTPHEADER     => ['Accept: application/vnd.github.v3+json'],
         ]);
         $body = curl_exec($ch);
