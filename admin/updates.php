@@ -51,6 +51,15 @@ if ($action === 'rerun_all_migrations' && $_SERVER['REQUEST_METHOD'] === 'POST')
     // On failure: fall through so the page renders with $results intact
 }
 
+// ---- Sync lock file version to code version ----
+if ($action === 'sync_version' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    Auth::verifyCsrf();
+    Auth::requireRole('admin');
+    Updater::updateLockVersion(Updater::APP_VERSION);
+    flash('success', 'Installed version updated to ' . Updater::APP_VERSION . '.');
+    redirect(siteUrl('admin/updates'));
+}
+
 // ---- Clear page cache ----
 if ($action === 'clear_cache' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::verifyCsrf();
@@ -109,6 +118,7 @@ if ($action === 'zip_update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ---- Data for page ----
 $currentVersion = Updater::installedVersion();
+$lockNeedsSync  = Updater::lockNeedsSync();
 $pending        = Updater::pendingMigrations();
 $applied        = Updater::appliedMigrations();
 $allMigrations  = Updater::allMigrations();
@@ -122,27 +132,23 @@ if ($_GET['check_github'] ?? false) {
 }
 
 adminLayout('Updates & Migrations', function() use (
-    $currentVersion, $pending, $applied, $allMigrations,
+    $currentVersion, $lockNeedsSync, $pending, $applied, $allMigrations,
     $orphaned, $gitStatus, $githubResult, $results
 ) {
 ?>
 
 <!-- Version banner -->
-<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); margin-bottom:24px;">
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); margin-bottom:<?= $lockNeedsSync ? '8px' : '24px' ?>;">
   <div class="stat-card">
-    <div class="num" style="font-size:24px;"><?= h($currentVersion) ?></div>
+    <div class="num" style="font-size:24px; color:<?= $lockNeedsSync ? '#e65100' : 'inherit' ?>;"><?= h($currentVersion) ?></div>
     <div class="label">Installed Version</div>
   </div>
   <div class="stat-card">
-    <div class="num" style="font-size:24px; color:<?= $currentVersion !== Updater::APP_VERSION ? '#e65100' : '#2e7d32' ?>;">
-      <?= h(Updater::APP_VERSION) ?>
-    </div>
+    <div class="num" style="font-size:24px; color:#2e7d32;"><?= h(Updater::APP_VERSION) ?></div>
     <div class="label">Code Version</div>
   </div>
   <div class="stat-card">
-    <div class="num" style="font-size:24px; color:<?= count($pending) > 0 ? '#e65100' : '#2e7d32' ?>;">
-      <?= count($pending) ?>
-    </div>
+    <div class="num" style="font-size:24px; color:<?= count($pending) > 0 ? '#e65100' : '#2e7d32' ?>;"><?= count($pending) ?></div>
     <div class="label">Pending Migration<?= count($pending) !== 1 ? 's' : '' ?></div>
   </div>
   <div class="stat-card">
@@ -150,6 +156,22 @@ adminLayout('Updates & Migrations', function() use (
     <div class="label">Applied Migrations</div>
   </div>
 </div>
+
+<?php if ($lockNeedsSync): ?>
+<div class="alert alert-warn" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+  <span>
+    &#9888; <strong>Installed version <?= h($currentVersion) ?> is behind code version <?= h(Updater::APP_VERSION) ?>.</strong>
+    Files were deployed manually — click to mark this installation as up to date.
+  </span>
+  <form method="post" style="margin:0;">
+    <?= csrfField() ?>
+    <input type="hidden" name="action" value="sync_version">
+    <button type="submit" class="btn btn-primary btn-sm">
+      &#10003; Mark as <?= h(Updater::APP_VERSION) ?>
+    </button>
+  </form>
+</div>
+<?php endif; ?>
 
 <!-- Migration run results (shown when a migration fails) -->
 <?php if (!empty($results)): ?>

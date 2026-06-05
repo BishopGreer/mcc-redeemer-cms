@@ -36,6 +36,21 @@ class Updater {
         return self::APP_VERSION;
     }
 
+    /**
+     * The effective running version — the higher of the lock file and the code.
+     * This is the right value to compare against GitHub releases, because code
+     * may have been deployed manually (FTP/rsync) without updating the lock file.
+     */
+    public static function runningVersion(): string {
+        $lock = self::installedVersion();
+        return version_compare(self::APP_VERSION, $lock, '>') ? self::APP_VERSION : $lock;
+    }
+
+    /** Returns true when install.lock is behind APP_VERSION (needs a sync). */
+    public static function lockNeedsSync(): bool {
+        return version_compare(self::APP_VERSION, self::installedVersion(), '>');
+    }
+
     public static function updateLockVersion(string $version): void {
         $data = [];
         if (file_exists(self::LOCK_FILE)) {
@@ -334,8 +349,10 @@ class Updater {
         }
 
         $latest    = ltrim($data['tag_name'], 'v');
-        $installed = self::installedVersion();
-        $newer     = version_compare($latest, $installed, '>');
+        // Use the higher of the lock-file version and the code version so that
+        // manually-deployed updates (FTP / rsync) don't falsely show as outdated.
+        $running   = self::runningVersion();
+        $newer     = version_compare($latest, $running, '>');
 
         return [
             'tag'    => $data['tag_name'],
