@@ -4846,6 +4846,38 @@ select.form-control {
 .events-sc-more:hover { background: rgba(107,63,160,0.08); }
 .events-shortcode-empty { color: var(--color-text-muted); font-style: italic; }
 
+/* ── Events shortcode inside the footer — invert colours for dark background ── */
+.footer-col .events-shortcode {
+  border-color: rgba(255,255,255,0.15);
+  margin: 0.5rem 0 0;
+}
+.footer-col .events-sc-item {
+  color: rgba(237,232,245,0.9);
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+.footer-col .events-sc-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+.footer-col .events-sc-title {
+  color: #fff;
+}
+.footer-col .events-sc-time,
+.footer-col .events-sc-loc {
+  color: rgba(237,232,245,0.65);
+}
+.footer-col .events-sc-more {
+  color: rgba(237,232,245,0.9);
+  background: rgba(255,255,255,0.06);
+  border-top-color: rgba(255,255,255,0.1);
+}
+.footer-col .events-sc-more:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+.footer-col .events-shortcode-empty {
+  color: rgba(237,232,245,0.6);
+}
+
 @media (max-width: 600px) {
   .event-card {
     flex-wrap: wrap;

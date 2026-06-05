@@ -11,7 +11,7 @@
  */
 class Updater {
 
-    const APP_VERSION     = '1.4.0';   // bump this with every release commit
+    const APP_VERSION     = '1.5.0';   // bump this with every release commit
     const LOCK_FILE       = BASE_PATH . '/config/install.lock';
     const MIGRATIONS_DIR  = BASE_PATH . '/install/migrations';
     const GITHUB_REPO     = 'BishopGreer/mcc-redeemer-cms';
