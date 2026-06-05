@@ -416,23 +416,6 @@ document.addEventListener('click', function(e) {
     <div class="footer-col">
       <h3><?= h($siteName) ?></h3>
       <p><?= h($siteTag) ?></p>
-      <?php if ($paypalLink || $venmoLink): ?>
-      <div class="footer-donate" style="margin-top:16px;">
-        <p style="font-weight:600; margin-bottom:10px; color:var(--color-accent-light, #F0C040);">Support Our Church</p>
-        <?php if ($paypalLink): ?>
-        <a href="<?= h($paypalLink) ?>" class="footer-donate-btn footer-donate-paypal"
-           target="_blank" rel="noopener noreferrer">
-          &#128179; Give via PayPal
-        </a>
-        <?php endif; ?>
-        <?php if ($venmoLink): ?>
-        <a href="<?= h($venmoLink) ?>" class="footer-donate-btn footer-donate-venmo"
-           target="_blank" rel="noopener noreferrer">
-          &#128172; Give via Venmo
-        </a>
-        <?php endif; ?>
-      </div>
-      <?php endif; ?>
     </div>
     <div class="footer-col">
       <h3>Pages</h3>
