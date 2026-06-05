@@ -97,6 +97,20 @@ if ($action === 'git_pull' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(siteUrl('admin/updates'));
 }
 
+// ---- Connect remote to GitHub and pull ----
+if ($action === 'git_connect_pull' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    Auth::verifyCsrf();
+    Auth::requireRole('admin');
+    $pullResult = Updater::gitConnectAndPull();
+    if ($pullResult['ok']) {
+        $migs = count($pullResult['migrations']);
+        flash('success', 'Connected to GitHub and pulled latest code.' . ($migs ? " {$migs} migration(s) applied." : ' No new migrations.'));
+    } else {
+        flash('error', 'GitHub pull failed: ' . $pullResult['output']);
+    }
+    redirect(siteUrl('admin/updates'));
+}
+
 // ---- ZIP upload update ----
 if ($action === 'zip_update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::verifyCsrf();
@@ -264,21 +278,37 @@ adminLayout('Updates & Migrations', function() use (
         <div style="background:var(--cream); border-radius:var(--radius); padding:12px; margin-bottom:14px; font-family:monospace; font-size:12.5px; line-height:1.8;">
           <div>Branch: <strong><?= h($gitStatus['branch']) ?></strong></div>
           <div>Commit: <strong><?= h($gitStatus['hash']) ?></strong></div>
-          <div>Behind remote: <strong style="color:<?= $gitStatus['behind'] > 0 ? '#e65100' : '#2e7d32' ?>;">
+          <div>Remote: <strong style="color:<?= $gitStatus['isGitHub'] ? '#2e7d32' : '#e65100' ?>;">
+            <?= $gitStatus['remoteUrl'] ? h($gitStatus['remoteUrl']) : 'not set' ?>
+          </strong></div>
+          <?php if ($gitStatus['isGitHub']): ?>
+          <div>Behind GitHub: <strong style="color:<?= $gitStatus['behind'] > 0 ? '#e65100' : '#2e7d32' ?>;">
             <?= $gitStatus['behind'] ?> commit<?= $gitStatus['behind'] !== 1 ? 's' : '' ?>
           </strong></div>
+          <?php endif; ?>
         </div>
 
-        <?php if ($gitStatus['behind'] > 0): ?>
-          <form method="post" onsubmit="return confirm('Pull the latest code from git? This will overwrite local changes.');">
+        <?php if (!$gitStatus['isGitHub']): ?>
+          <div class="alert alert-warn" style="margin-bottom:12px; font-size:13px;">
+            &#9888; Git remote is not pointing at GitHub. Click below to connect and pull the latest code.
+          </div>
+          <form method="post" onsubmit="return confirm('This will point git at GitHub and pull the latest code. Continue?');">
+            <?= csrfField() ?>
+            <input type="hidden" name="action" value="git_connect_pull">
+            <button type="submit" class="btn btn-primary" style="width:100%;">
+              &#127760; Connect to GitHub &amp; Pull Latest
+            </button>
+          </form>
+        <?php elseif ($gitStatus['behind'] > 0): ?>
+          <form method="post" onsubmit="return confirm('Pull the latest code from GitHub?');">
             <?= csrfField() ?>
             <input type="hidden" name="action" value="git_pull">
             <button type="submit" class="btn btn-primary" style="width:100%;">
-              &#11015; Pull <?= $gitStatus['behind'] ?> New Commit<?= $gitStatus['behind'] !== 1 ? 's' : '' ?>
+              &#11015; Pull <?= $gitStatus['behind'] ?> New Commit<?= $gitStatus['behind'] !== 1 ? 's' : '' ?> from GitHub
             </button>
           </form>
         <?php else: ?>
-          <div class="alert alert-success" style="margin:0;">&#10003; Code is up to date.</div>
+          <div class="alert alert-success" style="margin:0;">&#10003; Code is up to date with GitHub.</div>
         <?php endif; ?>
       <?php endif; ?>
     </div>

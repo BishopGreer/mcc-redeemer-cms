@@ -11,7 +11,7 @@
  */
 class Updater {
 
-    const APP_VERSION     = '1.3.0';   // bump this with every release commit
+    const APP_VERSION     = '1.4.0';   // bump this with every release commit
     const LOCK_FILE       = BASE_PATH . '/config/install.lock';
     const MIGRATIONS_DIR  = BASE_PATH . '/install/migrations';
     const GITHUB_REPO     = 'BishopGreer/mcc-redeemer-cms';
@@ -187,25 +187,79 @@ class Updater {
         return is_dir(BASE_PATH . '/.git');
     }
 
+    /** Return the current git remote URL for 'origin', or empty string. */
+    public static function gitRemoteUrl(): string {
+        if (!self::gitAvailable() || !self::isGitRepo()) return '';
+        return trim(shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git remote get-url origin 2>/dev/null') ?? '');
+    }
+
+    /** True when origin already points at the canonical GitHub repo. */
+    public static function gitRemoteIsGitHub(): bool {
+        $url = self::gitRemoteUrl();
+        return str_contains($url, 'github.com') && str_contains($url, self::GITHUB_REPO);
+    }
+
     public static function gitStatus(): array {
         if (!self::gitAvailable() || !self::isGitRepo()) {
             return ['available' => false];
         }
 
-        $branch = trim(shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git rev-parse --abbrev-ref HEAD 2>&1') ?? '');
-        $hash   = trim(shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git rev-parse --short HEAD 2>&1') ?? '');
+        $branch    = trim(shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git rev-parse --abbrev-ref HEAD 2>&1') ?? '');
+        $hash      = trim(shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git rev-parse --short HEAD 2>&1') ?? '');
+        $remoteUrl = self::gitRemoteUrl();
+        $isGitHub  = self::gitRemoteIsGitHub();
 
-        // Check if remote has newer commits
-        shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git fetch origin 2>&1');
-        $behind = trim(shell_exec(
-            'cd ' . escapeshellarg(BASE_PATH) . ' && git rev-list HEAD..origin/' . escapeshellarg($branch) . ' --count 2>&1'
-        ) ?? '0');
+        // Only fetch (and count behind) if remote is GitHub — otherwise fetch
+        // would silently fail and report 0, which is misleading.
+        $behind = 0;
+        if ($isGitHub) {
+            shell_exec('cd ' . escapeshellarg(BASE_PATH) . ' && git fetch origin 2>&1');
+            $behind = (int)trim(shell_exec(
+                'cd ' . escapeshellarg(BASE_PATH) . ' && git rev-list HEAD..origin/' . escapeshellarg($branch) . ' --count 2>&1'
+            ) ?? '0');
+        }
 
         return [
             'available' => true,
             'branch'    => $branch,
             'hash'      => $hash,
-            'behind'    => (int)$behind,
+            'behind'    => $behind,
+            'remoteUrl' => $remoteUrl,
+            'isGitHub'  => $isGitHub,
+        ];
+    }
+
+    /**
+     * Point origin at GitHub and immediately pull.
+     * Used when the server's git remote was never set up correctly.
+     */
+    public static function gitConnectAndPull(): array {
+        if (!self::gitAvailable() || !self::isGitRepo()) {
+            return ['ok' => false, 'output' => 'Git is not available on this server.', 'migrations' => []];
+        }
+
+        $repoUrl = 'https://github.com/' . self::GITHUB_REPO . '.git';
+        $dir     = escapeshellarg(BASE_PATH);
+
+        // Set the remote URL
+        shell_exec("cd {$dir} && git remote set-url origin " . escapeshellarg($repoUrl) . ' 2>&1');
+
+        // Fetch + pull
+        shell_exec("cd {$dir} && git fetch origin 2>&1");
+        $output = shell_exec("cd {$dir} && git pull --ff-only origin main 2>&1") ?? '';
+
+        $ok = str_contains($output, 'Already up to date') || str_contains($output, 'Fast-forward');
+
+        $migResults = [];
+        if ($ok) {
+            $migResults = self::runPendingMigrations();
+            self::updateLockVersion(self::APP_VERSION);
+        }
+
+        return [
+            'ok'         => $ok,
+            'output'     => trim($output),
+            'migrations' => $migResults,
         ];
     }
 

@@ -5,7 +5,7 @@
  */
 class Installer {
 
-    const VERSION   = '1.3.0';
+    const VERSION   = '1.4.0';
     const MIN_PHP   = '8.1.0';
     const LOCK_FILE = __DIR__ . '/../config/install.lock';
     const CONFIG    = __DIR__ . '/../config/config.local.php';
