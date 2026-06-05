@@ -11,6 +11,7 @@
  */
 class Updater {
 
+    const APP_VERSION     = '1.1.0';   // bump this with every release commit
     const LOCK_FILE       = BASE_PATH . '/config/install.lock';
     const MIGRATIONS_DIR  = BASE_PATH . '/install/migrations';
     const GITHUB_REPO     = 'BishopGreer/mcc-redeemer-cms';
@@ -20,10 +21,19 @@ class Updater {
     // Version info
     // -------------------------------------------------------
 
+    /**
+     * The version recorded in install.lock (what's actually running on this server).
+     * Falls back to APP_VERSION when no lock file exists (e.g. dev environments).
+     */
     public static function installedVersion(): string {
-        if (!file_exists(self::LOCK_FILE)) return 'unknown';
+        if (!file_exists(self::LOCK_FILE)) return self::APP_VERSION;
         $data = json_decode(file_get_contents(self::LOCK_FILE), true);
-        return $data['version'] ?? 'unknown';
+        return $data['version'] ?? self::APP_VERSION;
+    }
+
+    /** The version baked into this copy of the code. */
+    public static function codeVersion(): string {
+        return self::APP_VERSION;
     }
 
     public static function updateLockVersion(string $version): void {
@@ -202,6 +212,8 @@ class Updater {
         $migResults = [];
         if ($ok) {
             $migResults = self::runPendingMigrations();
+            // Stamp the lock file so installedVersion() reflects the pulled code.
+            self::updateLockVersion(self::APP_VERSION);
         }
 
         return [

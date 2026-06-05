@@ -134,6 +134,12 @@ adminLayout('Updates &amp; Migrations', function() use (
     <div class="label">Installed Version</div>
   </div>
   <div class="stat-card">
+    <div class="num" style="font-size:24px; color:<?= $currentVersion !== Updater::APP_VERSION ? '#e65100' : '#2e7d32' ?>;">
+      <?= h(Updater::APP_VERSION) ?>
+    </div>
+    <div class="label">Code Version</div>
+  </div>
+  <div class="stat-card">
     <div class="num" style="font-size:24px; color:<?= count($pending) > 0 ? '#e65100' : '#2e7d32' ?>;">
       <?= count($pending) ?>
     </div>

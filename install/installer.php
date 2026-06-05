@@ -1,11 +1,11 @@
 <?php
 /**
- * OurSaintFrancis CMS — Installer Engine
+ * MCCOOR CMS — Installer Engine
  * Handles all logic for the web-based setup wizard.
  */
 class Installer {
 
-    const VERSION   = '1.0.0';
+    const VERSION   = '1.1.0';
     const MIN_PHP   = '8.1.0';
     const LOCK_FILE = __DIR__ . '/../config/install.lock';
     const CONFIG    = __DIR__ . '/../config/config.local.php';
