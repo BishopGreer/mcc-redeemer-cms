@@ -124,7 +124,7 @@ $baseRoleLabels = [
     'admin'       => 'Admin — full admin panel navigation',
     'editor'      => 'Editor — content editing access',
     'author'      => 'Author — post/page authoring',
-    'parishioner' => 'Parishioner — no admin access by default',
+    'parishioner' => 'Member — no admin access by default',
 ];
 
 adminLayout('Roles', function() use ($roles, $editRole, $editPerms, $showForm, $action, $editId, $permGroups, $baseRoleLabels) {

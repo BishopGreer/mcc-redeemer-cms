@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$siteName = 'Your Parish';
+$siteName = 'MCCOOR CMS';
 ?>
 <!DOCTYPE html>
 <html lang="en">

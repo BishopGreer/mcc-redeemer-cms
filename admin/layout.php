@@ -7,7 +7,7 @@ if (!class_exists('Updater') && defined('BASE_PATH')) {
 // Admin layout helper — call adminLayout('Page Title', fn() => { ... render body ... })
 function adminLayout(string $pageTitle, callable $body): void {
     $user     = Auth::user();
-    $siteName = setting('site_name', 'Your Parish');
+    $siteName = setting('site_name', 'MCCOOR CMS');
     $csrf     = Auth::csrf();
 
     $isNetworkMode = defined('NETWORK_MODE') && NETWORK_MODE;
@@ -85,7 +85,7 @@ function adminLayout(string $pageTitle, callable $body): void {
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <h1><?= h($siteName) ?><br><small>Admin Panel</small></h1>
+      <h1>MCCOOR CMS<br><small><?= h($siteName) ?></small></h1>
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-section">Content</div>

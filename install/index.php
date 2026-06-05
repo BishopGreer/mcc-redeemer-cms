@@ -467,7 +467,7 @@ h2 { font-size: 20px; color: #4a2c16; margin-bottom: 6px; font-weight: normal; }
       <strong>Next steps:</strong>
       <ol style="margin: 10px 0 0 20px;">
         <li>Log into the admin panel with the account you just created</li>
-        <li>Go to <strong>Settings</strong> and enter your parish address, phone, and SMTP email settings</li>
+        <li>Go to <strong>Settings</strong> and enter your church address, phone, and SMTP email settings</li>
         <li>Edit the <strong>Home</strong> page with your welcome message</li>
         <li>Get a free TinyMCE API key at <strong>tiny.cloud</strong> and add it in Settings</li>
         <li>Import your MailPoet subscribers in <strong>Subscribers → Import CSV</strong></li>
@@ -567,7 +567,7 @@ h2 { font-size: 20px; color: #4a2c16; margin-bottom: 6px; font-weight: normal; }
   <?php elseif ($step === 3): ?>
     <!-- STEP 3: Site info -->
     <h2>Site Information</h2>
-    <p class="lead">Tell us about your parish website.</p>
+    <p class="lead">Tell us about your church website.</p>
 
     <?php if (!($_SESSION['config_written'] ?? true)): ?>
     <div class="alert alert-error" style="margin-bottom:16px;">
@@ -592,8 +592,8 @@ h2 { font-size: 20px; color: #4a2c16; margin-bottom: 6px; font-weight: normal; }
 
     <form method="post" action="?step=3">
       <div class="form-group">
-        <label>Parish / Site Name</label>
-        <input type="text" name="site_name" value="<?= htmlspecialchars($_POST['site_name'] ?? $_SESSION['site']['siteName'] ?? 'Your Parish') ?>" required>
+        <label>Site Name</label>
+        <input type="text" name="site_name" value="<?= htmlspecialchars($_POST['site_name'] ?? $_SESSION['site']['siteName'] ?? 'My Church') ?>" required>
       </div>
       <div class="form-group">
         <label>Tagline</label>

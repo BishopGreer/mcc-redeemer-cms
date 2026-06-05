@@ -173,7 +173,7 @@ $roleLabels = [
     'admin'       => ['label' => 'Admin',       'color' => '#7c3aed'],
     'editor'      => ['label' => 'Editor',      'color' => '#0369a1'],
     'author'      => ['label' => 'Author',      'color' => '#065f46'],
-    'parishioner' => ['label' => 'Parishioner', 'color' => '#92400e'],
+    'parishioner' => ['label' => 'Member', 'color' => '#92400e'],
 ];
 
 adminLayout('User Management', function() use ($users, $editUser, $showForm, $action, $currentUserId, $permGroups, $roleLabels, $isSuperAdmin, $allSites, $customRoles) {
@@ -236,7 +236,7 @@ $isSelf = ($fuId === $currentUserId);
             <strong>Admin</strong> — full access &nbsp;|&nbsp;
             <strong>Editor</strong> — content editing &nbsp;|&nbsp;
             <strong>Author</strong> — posts &amp; pages &nbsp;|&nbsp;
-            <strong>Parishioner</strong> — no admin access by default
+            <strong>Member</strong> — no admin access by default
           </div>
         </div>
 
