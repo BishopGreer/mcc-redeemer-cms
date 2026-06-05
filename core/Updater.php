@@ -11,7 +11,7 @@
  */
 class Updater {
 
-    const APP_VERSION     = '1.6.0';   // bump this with every release commit
+    const APP_VERSION     = '1.7.0';   // bump this with every release commit
     const LOCK_FILE       = BASE_PATH . '/config/install.lock';
     const MIGRATIONS_DIR  = BASE_PATH . '/install/migrations';
     const GITHUB_REPO     = 'BishopGreer/mcc-redeemer-cms';
@@ -369,6 +369,151 @@ class Updater {
     }
 
     // -------------------------------------------------------
+    // GitHub release — direct ZIP download & apply
+    // -------------------------------------------------------
+
+    /**
+     * Download the source ZIP for a GitHub release and apply it directly.
+     * Works on any server (no git permissions needed).
+     *
+     * GitHub source ZIPs are structured as:
+     *   mcc-redeemer-cms-1.6.0/
+     *     admin/
+     *     core/
+     *     ...
+     *
+     * We copy everything except config/, public/uploads/, and .git/,
+     * then run pending migrations and stamp the lock file.
+     *
+     * @param  string $tag     e.g. 'v1.6.0'
+     * @param  string $zipUrl  GitHub zipball_url or archive URL
+     * @return array  ['ok'=>bool, 'message'=>string, 'migrations'=>array]
+     */
+    public static function downloadAndApplyGitHubRelease(string $tag, string $zipUrl): array
+    {
+        if (!extension_loaded('zip')) {
+            return ['ok' => false, 'message' => 'PHP zip extension is not available.', 'migrations' => []];
+        }
+        if (!function_exists('curl_init')) {
+            return ['ok' => false, 'message' => 'cURL is not available on this server.', 'migrations' => []];
+        }
+
+        // --- Download ZIP ---
+        $tmpZip = sys_get_temp_dir() . '/mccoor_update_' . time() . '.zip';
+        $fh     = fopen($tmpZip, 'wb');
+        if (!$fh) {
+            return ['ok' => false, 'message' => 'Cannot write to temp directory.', 'migrations' => []];
+        }
+
+        $ch = curl_init($zipUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_FILE           => $fh,
+            CURLOPT_FOLLOWLOCATION => true,   // GitHub redirects to S3
+            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_USERAGENT      => 'MCCOOR-CMS/' . self::APP_VERSION,
+            CURLOPT_HTTPHEADER     => ['Accept: application/vnd.github.v3+json'],
+        ]);
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
+        curl_close($ch);
+        fclose($fh);
+
+        if ($curlErr || $httpCode !== 200) {
+            @unlink($tmpZip);
+            return ['ok' => false, 'message' => "Download failed (HTTP {$httpCode}): {$curlErr}", 'migrations' => []];
+        }
+
+        // --- Extract ZIP ---
+        $tmpDir = sys_get_temp_dir() . '/mccoor_update_' . time();
+        if (!mkdir($tmpDir, 0755, true)) {
+            @unlink($tmpZip);
+            return ['ok' => false, 'message' => 'Could not create temp extraction directory.', 'migrations' => []];
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($tmpZip) !== true) {
+            @unlink($tmpZip);
+            self::rrmdir($tmpDir);
+            return ['ok' => false, 'message' => 'Could not open downloaded ZIP.', 'migrations' => []];
+        }
+        $zip->extractTo($tmpDir);
+        $zip->close();
+        @unlink($tmpZip);
+
+        // GitHub source ZIPs have a single top-level folder: repo-version/
+        $entries = array_values(array_filter(
+            glob($tmpDir . '/*'),
+            fn($p) => is_dir($p)
+        ));
+        if (empty($entries)) {
+            self::rrmdir($tmpDir);
+            return ['ok' => false, 'message' => 'Unexpected ZIP structure — no root folder found.', 'migrations' => []];
+        }
+        $srcRoot = $entries[0]; // e.g. /tmp/mccoor_update_.../mcc-redeemer-cms-1.6.0
+
+        // --- Directories to never overwrite ---
+        $skip = ['config', '.git', 'public/uploads', 'cache'];
+
+        // --- Copy files recursively, skipping protected dirs ---
+        self::rcopySelective($srcRoot, BASE_PATH, $skip);
+
+        // --- Copy new migration files into place ---
+        $srcMig = $srcRoot . '/install/migrations';
+        $dstMig = self::MIGRATIONS_DIR;
+        if (is_dir($srcMig)) {
+            foreach (glob($srcMig . '/*.sql') as $f) {
+                $dest = $dstMig . '/' . basename($f);
+                if (!file_exists($dest)) {
+                    copy($f, $dest);
+                }
+            }
+        }
+
+        self::rrmdir($tmpDir);
+
+        // --- Run pending migrations ---
+        $migResults = self::runPendingMigrations();
+
+        // --- Stamp the version ---
+        $version = ltrim($tag, 'v');
+        self::updateLockVersion($version);
+
+        return [
+            'ok'         => true,
+            'message'    => "Updated to {$tag} successfully.",
+            'migrations' => $migResults,
+        ];
+    }
+
+    /**
+     * Recursive copy that skips specified subdirectory names.
+     * @param string[] $skip  directory basenames to skip (relative to $dst root)
+     */
+    private static function rcopySelective(string $src, string $dst, array $skip, string $relPath = ''): void
+    {
+        $dir = opendir($src);
+        if (!$dir) return;
+        while (($file = readdir($dir)) !== false) {
+            if ($file === '.' || $file === '..') continue;
+            $rel     = $relPath ? $relPath . '/' . $file : $file;
+            $srcPath = $src . '/' . $file;
+            $dstPath = $dst . '/' . $file;
+            // Skip protected dirs
+            foreach ($skip as $s) {
+                if ($rel === $s || str_starts_with($rel, $s . '/')) continue 2;
+            }
+            if (is_dir($srcPath)) {
+                if (!is_dir($dstPath)) mkdir($dstPath, 0755, true);
+                self::rcopySelective($srcPath, $dstPath, $skip, $rel);
+            } else {
+                copy($srcPath, $dstPath);
+            }
+        }
+        closedir($dir);
+    }
+
+    // -------------------------------------------------------
     // GitHub release check
     // -------------------------------------------------------
 
@@ -408,13 +553,18 @@ class Updater {
         $running   = self::runningVersion();
         $newer     = version_compare($latest, $running, '>');
 
+        // Build the GitHub archive ZIP URL (always available, no asset upload needed)
+        $tag    = $data['tag_name'];
+        $zipUrl = "https://github.com/" . self::GITHUB_REPO . "/archive/refs/tags/{$tag}.zip";
+
         return [
-            'tag'    => $data['tag_name'],
-            'url'    => $data['html_url'] ?? '',
-            'notes'  => $data['body'] ?? '',
-            'assets' => $data['assets'] ?? [],
-            'newer'  => $newer,
-            'latest' => $latest,
+            'tag'     => $tag,
+            'url'     => $data['html_url'] ?? '',
+            'zip_url' => $zipUrl,
+            'notes'   => $data['body'] ?? '',
+            'assets'  => $data['assets'] ?? [],
+            'newer'   => $newer,
+            'latest'  => $latest,
         ];
     }
 

@@ -97,7 +97,7 @@ if ($action === 'git_pull' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(siteUrl('admin/updates'));
 }
 
-// ---- Connect remote to GitHub and pull ----
+// ---- Connect remote to GitHub and pull (git-based) ----
 if ($action === 'git_connect_pull' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     Auth::verifyCsrf();
     Auth::requireRole('admin');
@@ -107,6 +107,26 @@ if ($action === 'git_connect_pull' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('success', 'Connected to GitHub and pulled latest code.' . ($migs ? " {$migs} migration(s) applied." : ' No new migrations.'));
     } else {
         flash('error', 'GitHub pull failed: ' . $pullResult['output']);
+    }
+    redirect(siteUrl('admin/updates'));
+}
+
+// ---- Download & apply release ZIP directly from GitHub ----
+if ($action === 'github_zip_update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    Auth::verifyCsrf();
+    Auth::requireRole('admin');
+    $tag    = preg_replace('/[^a-zA-Z0-9._-]/', '', $_POST['release_tag']    ?? '');
+    $zipUrl = filter_var($_POST['release_zip_url'] ?? '', FILTER_VALIDATE_URL);
+    if (!$tag || !$zipUrl || !str_contains($zipUrl, 'github.com')) {
+        flash('error', 'Invalid release tag or ZIP URL.');
+        redirect(siteUrl('admin/updates'));
+    }
+    $result = Updater::downloadAndApplyGitHubRelease($tag, $zipUrl);
+    if ($result['ok']) {
+        $migs = count($result['migrations']);
+        flash('success', $result['message'] . ($migs ? " {$migs} migration(s) applied." : ''));
+    } else {
+        flash('error', 'Update failed: ' . $result['message']);
     }
     redirect(siteUrl('admin/updates'));
 }
@@ -342,16 +362,16 @@ adminLayout('Updates & Migrations', function() use (
             <?= h($githubResult['notes']) ?>
           </div>
         <?php endif; ?>
-        <?php if ($gitStatus['available'] && Updater::isGitRepo()): ?>
-          <form method="post" style="margin-bottom:8px;"
-                onsubmit="return confirm('Pull <?= h($githubResult['tag']) ?> from GitHub and run any new migrations?');">
-            <?= csrfField() ?>
-            <input type="hidden" name="action" value="git_connect_pull">
-            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
-              &#11015; Pull <?= h($githubResult['tag']) ?> Now
-            </button>
-          </form>
-        <?php endif; ?>
+        <form method="post" style="margin-bottom:8px;"
+              onsubmit="return confirm('Download and apply <?= h($githubResult['tag']) ?> from GitHub?\n\nThis will overwrite all CMS files except config/, uploads/, and cache/. Your content and settings are safe.\n\nAlways have a database backup before updating.');">
+          <?= csrfField() ?>
+          <input type="hidden" name="action"          value="github_zip_update">
+          <input type="hidden" name="release_tag"     value="<?= h($githubResult['tag']) ?>">
+          <input type="hidden" name="release_zip_url" value="<?= h($githubResult['zip_url'] ?? '') ?>">
+          <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+            &#11015; Download &amp; Apply <?= h($githubResult['tag']) ?>
+          </button>
+        </form>
         <a href="<?= h($githubResult['url']) ?>" target="_blank" class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;">
           View Release on GitHub &rarr;
         </a>
