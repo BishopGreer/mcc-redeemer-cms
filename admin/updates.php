@@ -121,7 +121,7 @@ if ($_GET['check_github'] ?? false) {
     $githubResult = Updater::checkGitHub();
 }
 
-adminLayout('Updates &amp; Migrations', function() use (
+adminLayout('Updates & Migrations', function() use (
     $currentVersion, $pending, $applied, $allMigrations,
     $orphaned, $gitStatus, $githubResult, $results
 ) {
