@@ -303,7 +303,7 @@ adminLayout($isNew ? 'New Post' : 'Edit: ' . $post['title'], function() use ($po
   </div>
 </form>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 let slugManual = <?= ($post['slug'] && !$isNew) ? 'true' : 'false' ?>;
 document.getElementById('slug').addEventListener('input', function() { slugManual = true; });
 

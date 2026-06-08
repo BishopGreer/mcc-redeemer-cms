@@ -408,7 +408,7 @@ adminLayout($pageTitle, function() use ($event, $isNew, $errors, $photo, $startV
 
 <link rel="stylesheet" href="<?= siteUrl('public/assets/jodit/jodit.min.css') ?>">
 <script src="<?= siteUrl('public/assets/jodit/jodit.min.js') ?>"></script>
-<script>
+<script nonce="<?= cspNonce() ?>">
 // ── Jodit ──────────────────────────────────────────────────
 if (typeof Jodit !== 'undefined') {
   Jodit.make('#event-desc', {

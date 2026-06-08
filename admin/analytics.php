@@ -221,7 +221,7 @@ $avgDurFmt = $avgDurSec > 0
   </table>
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 document.addEventListener('DOMContentLoaded', function() {
   const primary = '<?= $primary ?>';
   const accent  = '<?= $accent ?>';

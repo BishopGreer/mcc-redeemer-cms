@@ -270,7 +270,7 @@ adminLayout($isNew ? 'New Page' : 'Edit: ' . $page['title'], function() use ($pa
   </div>
 </form>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 // Page type toggle — hide content sections for custom nav links
 function togglePageType(type) {
   var isLink = type === 'link';

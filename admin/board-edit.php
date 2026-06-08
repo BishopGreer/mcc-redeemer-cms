@@ -213,7 +213,7 @@ adminLayout($pageTitle, function() use ($member, $isNew, $errors, $photo) {
 
 <link rel="stylesheet" href="<?= siteUrl('public/assets/jodit/jodit.min.css') ?>">
 <script src="<?= siteUrl('public/assets/jodit/jodit.min.js') ?>"></script>
-<script>
+<script nonce="<?= cspNonce() ?>">
 function openMediaPicker()  { document.getElementById('media-modal').style.display = 'block'; }
 function closeMediaPicker() { document.getElementById('media-modal').style.display = 'none'; }
 function clearPhoto() {

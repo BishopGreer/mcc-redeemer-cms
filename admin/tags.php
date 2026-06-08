@@ -211,7 +211,7 @@ adminLayout('Tags', function() use ($tags, $errors, $editing, $tagsTableExists) 
 
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 var _tagSlugManual = <?= $editing ? 'true' : 'false' ?>;
 document.getElementById('tag-slug').addEventListener('input', function() { _tagSlugManual = true; });
 function autoSlugTag(val) {

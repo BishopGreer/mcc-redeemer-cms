@@ -138,7 +138,7 @@ adminLayout('Media Library', function() use ($items, $total, $page, $perPage, $s
   </div>
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 const mediaData = <?= json_encode(array_map(function($m) {
     return [
         'id'            => $m['id'],

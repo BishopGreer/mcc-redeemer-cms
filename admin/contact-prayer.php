@@ -98,7 +98,7 @@ adminLayout('Contact Page', function() use ($contactEnabled, $contactContent) {
   </div>
 </form>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 (function() {
   var localJs = '<?= siteUrl('public/assets/jodit/jodit.min.js') ?>';
   var joditConfig = {

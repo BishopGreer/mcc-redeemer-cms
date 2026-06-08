@@ -76,7 +76,7 @@ adminLayout('Dashboard', function() use ($pageCount, $postCount, $mediaCount, $d
     <div class="chart-container">
       <canvas id="trafficChart"></canvas>
     </div>
-    <script>
+    <script nonce="<?= cspNonce() ?>">
     document.addEventListener('DOMContentLoaded', function() {
       const ctx = document.getElementById('trafficChart');
       if (!ctx) return;

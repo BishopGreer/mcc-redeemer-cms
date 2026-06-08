@@ -108,7 +108,7 @@ adminLayout('Board of Directors', function() use ($members) {
   </table>
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 // Simple drag-to-reorder
 (function() {
   var list = document.getElementById('board-list');

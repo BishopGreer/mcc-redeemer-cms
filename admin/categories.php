@@ -220,7 +220,7 @@ adminLayout('Categories', function() use ($categories, $errors, $editing) {
 
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 var _catSlugManual = <?= $editing ? 'true' : 'false' ?>;
 document.getElementById('cat-slug').addEventListener('input', function() { _catSlugManual = true; });
 function autoSlugCat(val) {

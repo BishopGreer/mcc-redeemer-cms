@@ -401,7 +401,7 @@ $isSelf = ($fuId === $currentUserId);
   </table>
 </div>
 
-<script>
+<script nonce="<?= cspNonce() ?>">
 // When the role dropdown changes, update which permission checkboxes are checked
 // to reflect the new role's defaults (preserving any explicit overrides).
 const hierarchy = {parishioner: 0, author: 1, editor: 2, admin: 3};

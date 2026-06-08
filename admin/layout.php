@@ -74,8 +74,8 @@ function adminLayout(string $pageTitle, callable $body): void {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($pageTitle) ?> — <?= h($siteName) ?> Admin</title>
 <link rel="stylesheet" href="<?= siteUrl('public/assets/css/admin.css') ?>">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script src="<?= siteUrl('public/assets/js/admin.js') ?>" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" nonce="<?= $adminNonce ?>"></script>
+<script src="<?= siteUrl('public/assets/js/admin.js') ?>" nonce="<?= $adminNonce ?>" defer></script>
 </head>
 <body>
 <div class="admin-wrap">
