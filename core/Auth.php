@@ -62,11 +62,59 @@ class Auth {
         }
     }
 
+    // ── Brute-force constants ────────────────────────────────────────────────
+    const RATE_WINDOW  = 900;  // 15-minute rolling window
+    const RATE_MAX     = 10;   // max attempts before lockout
+    const RATE_LOCKOUT = 900;  // lockout duration in seconds
+
+    /** Return the client IP, preferring a trusted proxy header when set. */
+    private static function clientIp(): string {
+        // Only trust X-Forwarded-For if server is behind a known proxy.
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
+
+    /** True when this IP has exceeded the failed-login threshold. */
+    public static function isRateLimited(): bool {
+        $ip      = self::clientIp();
+        $window  = date('Y-m-d H:i:s', time() - self::RATE_WINDOW);
+        try {
+            $row = Database::fetch(
+                "SELECT COUNT(*) AS cnt FROM login_attempts WHERE ip = ? AND attempted_at > ?",
+                [$ip, $window]
+            );
+            return ($row['cnt'] ?? 0) >= self::RATE_MAX;
+        } catch (\Throwable) {
+            return false; // table may not exist yet — fail open
+        }
+    }
+
+    /** Record a failed login attempt for rate limiting. */
+    private static function recordFailedAttempt(): void {
+        try {
+            Database::query(
+                "INSERT INTO login_attempts (ip, attempted_at) VALUES (?, NOW())",
+                [self::clientIp()]
+            );
+            // Prune old records to keep the table small.
+            Database::query(
+                "DELETE FROM login_attempts WHERE attempted_at < ?",
+                [date('Y-m-d H:i:s', time() - self::RATE_WINDOW * 4)]
+            );
+        } catch (\Throwable) {}
+    }
+
     public static function attempt(string $email, string $password, bool $remember = false): bool {
-        $user = Database::fetch("SELECT * FROM users WHERE email = ?", [strtolower(trim($email))]);
-        if (!$user || !password_verify($password, $user['password'])) {
+        // Enforce rate limit before any DB lookup.
+        if (self::isRateLimited()) {
             return false;
         }
+
+        $user = Database::fetch("SELECT * FROM users WHERE email = ?", [strtolower(trim($email))]);
+        if (!$user || !password_verify($password, $user['password'])) {
+            self::recordFailedAttempt();
+            return false;
+        }
+
         self::setSession($user);
         Database::update('users', ['last_login' => date('Y-m-d H:i:s')], 'id = ?', [$user['id']]);
 

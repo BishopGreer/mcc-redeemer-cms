@@ -674,11 +674,42 @@ JS;
                 $sizes    = is_array($fi['size'])     ? $fi['size']     : [$fi['size']];
                 $types    = is_array($fi['type'])     ? $fi['type']     : [$fi['type']];
 
+                // Extensions that must never be stored in the uploads directory.
+                static $blockedExts = [
+                    'php','php3','php4','php5','php7','phtml','phar',
+                    'pl','py','rb','sh','bash','cgi','asp','aspx','jsp',
+                    'htaccess','htpasswd','exe','bat','cmd','com','scr',
+                ];
+
                 for ($i = 0, $n = count($names); $i < $n; $i++) {
                     if ($errs[$i] !== UPLOAD_ERR_OK || !$names[$i]) {
                         continue;
                     }
-                    $ext  = strtolower(pathinfo($names[$i], PATHINFO_EXTENSION));
+
+                    $ext = strtolower(pathinfo($names[$i], PATHINFO_EXTENSION));
+
+                    // Reject executable/script extensions outright.
+                    if (in_array($ext, $blockedExts, true)) {
+                        continue;
+                    }
+
+                    // Verify actual MIME type via server-side detection (not client header).
+                    $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+                    $realMime = $finfo->file($tmps[$i]);
+                    $safeMimes = [
+                        'image/jpeg','image/png','image/gif','image/webp','image/svg+xml',
+                        'application/pdf',
+                        'text/plain','text/csv',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/zip',
+                    ];
+                    if (!in_array($realMime, $safeMimes, true)) {
+                        continue; // silently drop disallowed file types
+                    }
+
                     $safe = bin2hex(random_bytes(8)) . ($ext ? '.' . $ext : '');
                     if (move_uploaded_file($tmps[$i], $uploadDir . $safe)) {
                         Database::insert('form_files', [
@@ -686,7 +717,7 @@ JS;
                             'field_id'      => $fieldId,
                             'original_name' => $names[$i],
                             'stored_name'   => $safe,
-                            'mime_type'     => $types[$i] ?? null,
+                            'mime_type'     => $realMime,
                             'file_size'     => $sizes[$i] ?? null,
                         ]);
                     }

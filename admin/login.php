@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $remember = !empty($_POST['remember']);
 
-    if (Auth::attempt($email, $password, $remember)) {
+    if (Auth::isRateLimited()) {
+        $error = 'Too many login attempts. Please wait 15 minutes before trying again.';
+    } elseif (Auth::attempt($email, $password, $remember)) {
         redirect(siteUrl('admin/'));
     } else {
         $error = 'Invalid email address or password.';

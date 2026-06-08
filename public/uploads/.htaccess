@@ -1,0 +1,11 @@
+# Deny direct execution of scripts in the uploads directory.
+# Even if a PHP file somehow lands here, Apache will not run it.
+<FilesMatch "\.(php\d?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp)$">
+    Require all denied
+</FilesMatch>
+
+# Force all files to be served as plain text or attachment, never executed.
+AddType text/plain .php .php3 .php4 .php5 .php7 .phtml .phar .pl .py .cgi .sh
+
+# Disable CGI execution
+Options -ExecCGI

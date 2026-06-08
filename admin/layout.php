@@ -50,9 +50,6 @@ function adminLayout(string $pageTitle, callable $body): void {
         try { $pendingMigrations = count(Updater::pendingMigrations()); } catch (\Throwable) {}
     }
 
-    // Admin CSP — Report-Only while Chart.js CDN is in use.
-    // Jodit is served locally so no extra CDN domains are needed.
-    // Switch to Content-Security-Policy once reports are clean.
     $adminNonce = cspNonce();
     $adminCsp = implode('; ', [
         "default-src 'self'",
@@ -68,7 +65,7 @@ function adminLayout(string $pageTitle, callable $body): void {
         "frame-ancestors 'self'",
     ]);
     if (!headers_sent()) {
-        header("Content-Security-Policy-Report-Only: {$adminCsp}");
+        header("Content-Security-Policy: {$adminCsp}");
     }
 ?><!DOCTYPE html>
 <html lang="en">
